@@ -22,14 +22,14 @@
             padding: 0;
         }
 
-        /* Glassmorphism Effect */
+        /* Efek Glassmorphism */
         .glass-nav {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
 
-        /* Squircle Icon Style */
+        /* Gaya Ikon Squircle */
         .squircle {
             border-radius: 24%;
             box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
@@ -40,14 +40,14 @@
             transform: scale(0.9);
         }
 
-        /* Direct Mode Background - Full Screen Gradient */
+        /* Latar Belakang Direct Mode */
         .direct-bg {
             background: radial-gradient(circle at top right, #f5f3ff 0%, #ffffff 50%),
                         radial-gradient(circle at bottom left, #eff6ff 0%, #ffffff 50%);
             background-attachment: fixed;
         }
 
-        /* Animation */
+        /* Animasi */
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -57,7 +57,6 @@
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Hide scrollbar but keep functionality */
         .custom-scrollbar::-webkit-scrollbar { width: 0px; }
         
         iframe { 
@@ -66,10 +65,20 @@
             border: none; 
         }
 
-        /* Checkbox Switch Styling */
-        input:checked + .checkbox-bg { background-color: var(--primary); }
+        /* Gaya Tombol Kembali di Bawah Tengah */
+        .kembali-btn {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
 
-        /* Ensure content doesn't get cut off on long phones */
+        .kembali-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
         #app {
             min-height: 100vh;
             min-height: 100dvh;
@@ -80,7 +89,7 @@
 
     <div id="app" class="w-full max-w-md min-h-screen bg-white relative overflow-hidden flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)] transition-colors duration-500">
         
-        <!-- Header (Sembunyi otomatis di Direct Mode dashboard) -->
+        <!-- Header (Hanya untuk Creator/Admin) -->
         <header id="main-header" class="px-6 py-6 flex justify-between items-center bg-white/80 sticky top-0 z-40 shrink-0">
             <div id="header-text">
                 <h1 id="view-title" class="text-2xl font-extrabold tracking-tight text-slate-900 leading-none">Dashboard</h1>
@@ -96,12 +105,12 @@
             </div>
         </header>
 
-        <!-- Main Content Area -->
+        <!-- Area Konten Utama -->
         <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-            <!-- Konten dinamis akan dimuat di sini -->
+            <!-- Konten dinamis dimuat di sini -->
         </main>
 
-        <!-- Bottom Navigation (Hanya untuk Admin) -->
+        <!-- Navigasi Bawah (Hanya untuk Creator/Admin) -->
         <nav id="bottom-nav" class="glass-nav border-t border-slate-50 flex justify-around items-center px-6 py-4 sticky bottom-0 z-40 shrink-0 transition-transform duration-500">
             <button onclick="router.navigate('list')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-indigo-600 transition-colors">
                 <i data-lucide="grid" class="w-5 h-5"></i>
@@ -164,7 +173,7 @@
             const container = document.getElementById('main-content');
             const appWrapper = document.getElementById('app');
             
-            appWrapper.className = appWrapper.className.replace('direct-bg', '');
+            appWrapper.classList.remove('direct-bg');
             document.getElementById('main-header').classList.remove('hidden');
             document.getElementById('bottom-nav').style.transform = 'translateY(0)';
             document.getElementById('back-btn-header').classList.add('hidden');
@@ -225,7 +234,7 @@
             const isEditingApp = state.editingTempAppIndex !== null;
             const container = document.getElementById('main-content');
             document.getElementById('main-header').classList.remove('hidden');
-            document.getElementById('view-title').innerText = isEdit ? "Edit Space" : "New Space";
+            document.getElementById('view-title').innerText = isEdit ? "Edit Proyek" : "Proyek Baru";
             
             const currentURL = window.location.origin + window.location.pathname;
             const shareURL = `${currentURL}?view=${encodeURIComponent(state.tempOwnerName || '')}`;
@@ -236,7 +245,7 @@
             container.innerHTML = `
                 <div class="p-6 space-y-8 animate-slide-up pb-24">
                     <div class="space-y-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">IDENTITAS PEMILIK</label>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">NAMA PEMILIK</label>
                         <input type="text" id="owner-name" value="${state.tempOwnerName}" 
                             oninput="state.tempOwnerName = this.value; document.getElementById('share-url-input').value = '${currentURL}?view=' + encodeURIComponent(this.value)" 
                             placeholder="Contoh: Ramdan Studio" 
@@ -244,10 +253,10 @@
                     </div>
 
                     <div class="p-5 bg-slate-900 rounded-[2rem] space-y-4">
-                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Shareable Direct Link</label>
+                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-white/50">Tautan Berbagi</label>
                         <div class="flex gap-3 items-center">
                             <input type="text" id="share-url-input" value="${shareURL}" readonly 
-                                class="flex-1 bg-white/5 text-white/50 text-[11px] outline-none font-mono truncate">
+                                class="flex-1 bg-white/5 text-white/40 text-[10px] outline-none font-mono truncate">
                             <button id="copy-btn" onclick="copyText('share-url-input')" class="text-indigo-400 p-2 bg-white/5 rounded-xl"><i data-lucide="copy" class="w-4 h-4"></i></button>
                         </div>
                     </div>
@@ -261,7 +270,7 @@
                         </div>
                         
                         <div class="space-y-3">
-                            <input type="text" id="new-app-name" value="${editAppData.name}" placeholder="Label / Nama Aplikasi" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
+                            <input type="text" id="new-app-name" value="${editAppData.name}" placeholder="Nama Aplikasi/Folder" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
                             
                             <div class="flex items-center gap-3 px-1 py-1">
                                 <label class="flex items-center gap-2 cursor-pointer group">
@@ -277,19 +286,19 @@
                                 <input type="url" id="new-app-url" value="${editAppData.url}" placeholder="URL Aplikasi (https://...)" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
                             </div>
 
-                            <input type="url" id="new-app-icon" value="${editAppData.icon}" placeholder="URL Ikon (Drive/Web)" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
+                            <input type="url" id="new-app-icon" value="${editAppData.icon}" placeholder="URL Ikon (G-Drive / Web)" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
 
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">LOKASI PENEMPATAN</label>
                                 <select id="parent-id" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm appearance-none cursor-pointer">
-                                    <option value="null">Menu Utama Dashboard</option>
-                                    ${folderOptions.map(f => `<option value="${f.id}" ${editAppData.parentId === f.id ? 'selected' : ''}>Di dalam Folder: ${f.name}</option>`).join('')}
+                                    <option value="null">Halaman Utama</option>
+                                    ${folderOptions.map(f => `<option value="${f.id}" ${editAppData.parentId === f.id ? 'selected' : ''}>Masuk ke: ${f.name}</option>`).join('')}
                                 </select>
                             </div>
                         </div>
 
                         <button onclick="router.addToTempList()" class="w-full ${isEditingApp ? 'bg-amber-500 shadow-amber-100' : 'bg-indigo-600 shadow-indigo-100'} text-white p-4 rounded-2xl text-xs font-extrabold uppercase tracking-widest shadow-xl transition-all active:scale-95">
-                            ${isEditingApp ? 'Update Elemen' : 'Tambahkan Elemen'}
+                            ${isEditingApp ? 'Simpan Perubahan' : 'Tambahkan'}
                         </button>
                     </div>
 
@@ -307,10 +316,10 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2">
                                             <p class="text-sm font-bold text-slate-800 truncate">${app.name}</p>
-                                            ${app.isFolder ? '<span class="text-[8px] bg-indigo-100 text-indigo-600 px-1.5 rounded-full font-black uppercase">Folder</span>' : ''}
+                                            ${app.isFolder ? '<span class="text-[8px] bg-indigo-100 text-indigo-600 px-1.5 rounded-full font-black uppercase tracking-tighter">Folder</span>' : ''}
                                         </div>
                                         <p class="text-[9px] text-slate-400 truncate mt-0.5">
-                                            ${app.parentId !== "null" && app.parentId ? `Induk: ${state.tempApps.find(a => a.id === app.parentId)?.name || '?'}` : 'Menu Utama'}
+                                            ${app.parentId !== "null" && app.parentId ? `Induk: ${state.tempApps.find(a => a.id === app.parentId)?.name || '?'}` : 'Utama'}
                                         </p>
                                     </div>
                                     <div class="flex items-center">
@@ -323,7 +332,7 @@
                     </div>
 
                     <button onclick="router.saveFinalMenu()" class="w-full bg-slate-900 text-white p-5 rounded-[2.5rem] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-all">
-                        ${isEdit ? 'Update Dashboard' : 'Simpan Dashboard'}
+                        ${isEdit ? 'Selesaikan Perubahan' : 'Simpan Proyek'}
                     </button>
                 </div>
             `;
@@ -363,11 +372,11 @@
                 };
 
                 document.getElementById('view-title').innerText = folderName || menu.owner;
-                document.getElementById('view-subtitle').innerText = folderId ? "Folder Aktif" : "Preview Dashboard";
+                document.getElementById('view-subtitle').innerText = folderId ? "FOLDER" : "DASHBOARD";
             }
 
             container.innerHTML = `
-                <div class="flex-1 p-10 flex flex-col items-center animate-slide-up">
+                <div class="flex-1 p-10 flex flex-col items-center animate-slide-up h-full">
                     ${state.isDirectMode && !folderId ? `
                         <div class="w-full mb-16 text-left">
                             <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">${menu.owner}</h1>
@@ -378,14 +387,6 @@
                         </div>
                     ` : ''}
 
-                    ${folderId ? `
-                         <div class="w-full mb-10 animate-slide-up">
-                            <button onclick="renderView(${index}, ${menu.apps.find(a => a.id === folderId).parentId !== "null" ? `'${menu.apps.find(a => a.id === folderId).parentId}'` : 'null'})" class="flex items-center gap-2 text-indigo-600 font-bold text-xs">
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i> Kembali ke ${menu.apps.find(a => a.id === folderId).parentId !== "null" ? 'Folder Sebelumnya' : 'Halaman Utama'}
-                            </button>
-                         </div>
-                    ` : ''}
-
                     <div class="grid grid-cols-2 gap-x-12 gap-y-12 w-full pb-10">
                         ${visibleApps.map((app, i) => `
                             <div onclick="${app.isFolder ? `renderView(${index}, '${app.id}')` : `router.openBrowser('${app.url}', '${app.name}')`}" class="flex flex-col items-center gap-5 cursor-pointer group">
@@ -394,11 +395,11 @@
                                         `<img src="${fixDriveUrl(app.icon)}" referrerpolicy="no-referrer" class="w-full h-full object-cover absolute inset-0" onerror="handleImgError(this)">` : ''
                                     }
                                     <div class="img-fallback flex flex-col items-center justify-center w-full h-full ${app.icon ? 'hidden' : ''}">
-                                        <i data-lucide="${app.isFolder ? 'folder-open' : 'external-link'}" class="w-10 h-10 ${app.isFolder ? 'text-indigo-400' : 'text-indigo-100'}"></i>
+                                        <i data-lucide="${app.isFolder ? 'folder' : 'external-link'}" class="w-10 h-10 ${app.isFolder ? 'text-indigo-400' : 'text-indigo-100'}"></i>
                                     </div>
                                     ${app.isFolder ? `
-                                        <div class="absolute bottom-2 right-2 bg-indigo-600 text-white rounded-lg p-1 shadow-lg">
-                                            <i data-lucide="layers" class="w-3 h-3"></i>
+                                        <div class="absolute bottom-2 right-2 bg-indigo-600 text-white rounded-lg p-1.5 shadow-lg flex items-center justify-center">
+                                            <i data-lucide="plus" class="w-2.5 h-2.5"></i>
                                         </div>
                                     ` : ''}
                                 </div>
@@ -406,6 +407,16 @@
                             </div>
                         `).join('')}
                     </div>
+
+                    <!-- Tombol Kembali di Tengah Bawah -->
+                    ${folderId || !state.isDirectMode ? `
+                        <div class="mt-auto py-10 w-full flex justify-center">
+                             <button onclick="${folderId ? `renderView(${index}, ${menu.apps.find(a => a.id === folderId).parentId !== "null" ? `'${menu.apps.find(a => a.id === folderId).parentId}'` : 'null'})` : `router.navigate('list')`}" 
+                                class="kembali-btn px-10 py-4 text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] rounded-3xl flex items-center gap-3">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> KEMBALI
+                             </button>
+                        </div>
+                    ` : ''}
                 </div>
             `;
             lucide.createIcons();
@@ -426,13 +437,13 @@
 
             backBtnHeader.onclick = () => renderView(state.currentMenuIndex, state.currentFolderId);
             document.getElementById('view-title').innerText = name;
-            document.getElementById('view-subtitle').innerText = "Aplikasi Berjalan";
+            document.getElementById('view-subtitle').innerText = "MENJALANKAN...";
 
             container.className = "flex-1 overflow-hidden p-0 relative bg-white";
             container.innerHTML = `
                 <div class="absolute top-4 right-4 z-40">
-                    <a href="${url}" target="_blank" class="bg-indigo-600 text-white p-3.5 rounded-2xl shadow-xl shadow-indigo-200 flex items-center gap-2 text-[10px] font-bold active:scale-95 transition-all">
-                        <i data-lucide="external-link" class="w-4 h-4"></i> OPEN TAB
+                    <a href="${url}" target="_blank" class="bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-xl shadow-indigo-100 flex items-center gap-2 text-[10px] font-bold active:scale-95 transition-all">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> BUKA TAB
                     </a>
                 </div>
                 <iframe src="${url}" class="w-full h-full bg-white"></iframe>
@@ -459,9 +470,9 @@
                     content.innerHTML = `
                         <div class="p-8 space-y-6 flex-1 flex flex-col items-center justify-center animate-slide-up text-center">
                             <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center mb-4"><i data-lucide="trash-2" class="w-10 h-10"></i></div>
-                            <h2 class="text-xl font-bold">Pusat Data</h2>
-                            <p class="text-sm text-slate-400 max-w-xs">Data disimpan secara lokal di perangkat Anda.</p>
-                            <button onclick="router.clearAll()" class="mt-4 px-8 py-4 bg-rose-500 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-rose-100 transition-all active:scale-95">Reset Data</button>
+                            <h2 class="text-xl font-bold text-slate-800">Manajemen Data</h2>
+                            <p class="text-sm text-slate-400 max-w-xs">Data disimpan secara lokal pada peramban perangkat ini.</p>
+                            <button onclick="router.clearAll()" class="mt-4 px-10 py-4 bg-rose-500 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-rose-100 transition-all active:scale-95">Reset Data Aplikasi</button>
                         </div>`;
                     lucide.createIcons();
                 }
@@ -482,16 +493,12 @@
                 const icon = document.getElementById('new-app-icon').value;
                 const parentId = document.getElementById('parent-id').value;
 
-                if (!name || (!isFolder && !url)) return alert("Lengkapi data!");
+                if (!name || (!isFolder && !url)) return alert("Mohon lengkapi data!");
                 
                 const isEditingApp = state.editingTempAppIndex !== null;
-                
                 const appObj = { 
                     id: isEditingApp ? state.tempApps[state.editingTempAppIndex].id : Date.now().toString(),
-                    name, 
-                    url, 
-                    icon, 
-                    isFolder, 
+                    name, url, icon, isFolder, 
                     parentId: parentId === "null" ? "null" : parentId 
                 };
 
@@ -520,7 +527,7 @@
             },
             saveFinalMenu: () => {
                 const owner = document.getElementById('owner-name').value;
-                if (!owner || state.tempApps.length === 0) return alert("Lengkapi data!");
+                if (!owner || state.tempApps.length === 0) return alert("Mohon lengkapi identitas dan daftar aplikasi!");
                 if (state.editingIndex !== null) {
                     state.menus[state.editingIndex] = { owner, apps: [...state.tempApps] };
                 } else {
@@ -531,8 +538,8 @@
                 router.navigate('list');
             },
             openBrowser: (url, name) => router.navigate('browser', {url, name}),
-            deleteMenu: (idx) => { if (confirm("Hapus proyek ini?")) { state.menus.splice(idx, 1); saveState(); renderList(); } },
-            clearAll: () => { if(confirm("Hapus semua data?")) { localStorage.clear(); location.reload(); } }
+            deleteMenu: (idx) => { if (confirm("Hapus proyek dashboard ini?")) { state.menus.splice(idx, 1); saveState(); renderList(); } },
+            clearAll: () => { if(confirm("Tindakan ini akan menghapus semua data dashboard. Lanjutkan?")) { localStorage.clear(); location.reload(); } }
         };
 
         window.onload = () => {
