@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecrew-Crew Room</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+        body { 
+            font-family: 'DM Sans', sans-serif; 
+            background-color: #0f172a;
+            color: #f8fafc;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
+        .page-transition {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .view-hidden {
+            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        
+        .view-active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-card { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .menu-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+            border-color: #06b6d4;
+        }
+        
+        .canva-button {
+            background-color: #06b6d4;
+            color: white;
+        }
+        .canva-button:hover {
+            background-color: #0891b2;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: none;
+            border-radius: 1rem;
+            background: white;
+        }
+
+        /* Professional Marquee Style */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            background: linear-gradient(90deg, rgba(6,182,212,0.1) 0%, rgba(15,23,42,0) 50%, rgba(6,182,212,0.1) 100%);
+            border-top: 1px solid rgba(6,182,212,0.2);
+            border-bottom: 1px solid rgba(6,182,212,0.2);
+            padding: 10px 0;
+        }
+
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            color: #22d3ee;
+            text-transform: uppercase;
+        }
+
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        /* Preview Modal */
+        .preview-backdrop {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+ </head>
+ <body class="min-h-screen pb-10">
+  
+  <!-- Preview Pop-up Modal -->
+  <div id="preview-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center preview-backdrop">
+    <div class="w-full h-full max-w-6xl flex flex-col p-6 animate-in fade-in zoom-in duration-300">
+        <div class="flex items-center justify-between mb-4 bg-slate-800 p-4 rounded-2xl border border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-cyan-500/20 rounded-lg text-cyan-400">
+                    <i data-lucide="eye"></i>
+                </div>
+                <div>
+                    <h3 id="preview-user-title" class="font-bold text-white">Previewing Personal URL</h3>
+                    <p class="text-xs text-slate-400">Simulasi tampilan navigasi crew</p>
+                </div>
+            </div>
+            <button onclick="closePreview()" class="p-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div id="preview-body" class="flex-1 bg-slate-900 rounded-3xl border border-slate-700 overflow-y-auto shadow-2xl relative p-6">
+            <!-- Dynamic Content for Preview -->
+        </div>
+    </div>
+  </div>
+
+  <!-- Login Modal (For Management Access) -->
+  <div id="login-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/95 backdrop-blur-md">
+    <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl scale-95 transition-transform duration-300" id="login-box">
+        <div class="flex justify-center mb-6">
+            <div class="p-3 bg-cyan-500/10 rounded-full">
+                <i data-lucide="lock" class="text-cyan-400" style="width:40px;height:40px"></i>
+            </div>
+        </div>
+        <h3 class="text-2xl font-bold mb-6 text-center text-white">Management Login</h3>
+        <form onsubmit="performLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1 text-slate-400">Username</label>
+                <input id="login-user" type="text" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 text-slate-400">Password</label>
+                <input id="login-pass" type="password" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-cyan-500 outline-none">
+            </div>
+            <div id="login-error" class="text-red-400 text-sm hidden flex items-center gap-2">
+                <i data-lucide="alert-circle" style="width:14px;height:14px"></i> Password salah.
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="w-full canva-button py-3 rounded-xl font-bold transition-all">Akses Panel</button>
+                <button type="button" onclick="closeLogin()" class="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition-all">Batal</button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+  <!-- Greeting Marquee -->
+  <div id="greeting-marquee" class="marquee-container hidden">
+      <div id="marquee-content" class="marquee-text"></div>
+  </div>
+
+  <header id="main-header" class="relative overflow-hidden h-64 flex items-center bg-slate-900">
+   <div class="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-900/80 to-slate-800/60 z-10"></div>
+   <img id="header-logo" src="https://lh3.googleusercontent.com/d/1fiFem6YYOVqy1rD9F9aCTHgqHpIK2__c" alt="Logo" class="absolute inset-0 w-full h-full object-cover" />
+   <div class="relative z-20 px-6 max-w-6xl mx-auto w-full flex justify-between items-center">
+    <div>
+        <h1 class="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">Ecrew Room</h1>
+        <p class="mt-2 opacity-80 text-lg font-light">Navigasi cerdas untuk kru profesional.</p>
+    </div>
+    <div id="auth-controls"></div>
+   </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    <!-- View 1: Management Center (Admin) -->
+    <div id="view-admin" class="hidden page-transition space-y-10">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold flex items-center gap-3">
+                <i data-lucide="settings" class="text-cyan-400"></i>
+                Management Center
+            </h2>
+            <div class="flex gap-3">
+                <button onclick="toggleCrewForm()" class="canva-button px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all">
+                    <i data-lucide="user-plus"></i> Tambah Data Crew
+                </button>
+                <button onclick="toggleForm()" class="bg-slate-700 hover:bg-slate-600 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all">
+                    <i data-lucide="plus"></i> Buat Menu Baru
+                </button>
+            </div>
+        </div>
+
+        <!-- Section: Crew & Links Management -->
+        <div id="crew-management-panel" class="hidden grid grid-cols-1 xl:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
+            <!-- Crew Entry Form & List -->
+            <div class="p-8 rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl shadow-xl">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i data-lucide="users" class="text-cyan-400"></i> Manajemen Crew
+                    </h3>
+                </div>
+                <form class="grid grid-cols-2 gap-4 mb-8" onsubmit="handleCrewSubmit(event)">
+                    <input id="crew-name" type="text" required class="px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none" placeholder="Nama Lengkap">
+                    <select id="crew-rank" required class="px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
+                        <option value="Capt">Capt</option><option value="FO">FO</option><option value="Engineer">Engineer</option><option value="HLO">HLO</option><option value="FOO">FOO</option><option value="Cs">Cs</option>
+                    </select>
+                    <button type="submit" class="col-span-2 bg-cyan-600 hover:bg-cyan-500 py-3 rounded-xl font-bold text-white transition-all">Simpan Database Crew</button>
+                </form>
+                <div id="crew-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"></div>
+            </div>
+
+            <!-- Personalized Links List -->
+            <div class="p-8 rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl shadow-xl">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <i data-lucide="link" class="text-cyan-400"></i> Daftar Link Personal
+                </h3>
+                <div id="links-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+
+        <!-- Section: Menu Management List -->
+        <div class="p-8 rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl shadow-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <i data-lucide="layout-list" class="text-cyan-400"></i> Master Daftar Menu
+            </h3>
+            
+            <!-- Menu Creator Form -->
+            <div id="menu-form" class="hidden mb-10 p-6 bg-slate-900/50 rounded-2xl border border-slate-700 shadow-inner">
+                <form id="add-form" class="grid grid-cols-1 md:grid-cols-2 gap-6" onsubmit="handleSubmit(event)">
+                    <input type="hidden" id="edit-id">
+                    <div class="space-y-4">
+                        <input id="menu-name" type="text" required class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none" placeholder="Nama Menu">
+                        <input id="menu-url" type="url" class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none" placeholder="URL Tujuan (Iframe)">
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="menu-parent" class="px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none">
+                                <option value="">— Menu Utama —</option> 
+                            </select>
+                            <select id="menu-visibility" class="px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none">
+                                <option value="all">Semua Crew</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <input id="menu-image" type="url" class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white outline-none" placeholder="URL Gambar Banner">
+                        <div id="image-preview" class="h-24 rounded-xl border border-dashed border-slate-700 flex items-center justify-center overflow-hidden bg-slate-900/30">
+                            <img id="preview-img" class="w-full h-full object-cover hidden">
+                            <span id="preview-placeholder" class="text-slate-500 text-xs text-center">Preview Gambar</span>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 flex justify-end gap-3">
+                        <button type="button" class="bg-slate-700 px-6 py-2.5 rounded-xl font-bold" onclick="toggleForm()">Batal</button>
+                        <button type="submit" class="canva-button px-8 py-2.5 rounded-xl font-bold">Simpan Perubahan</button> 
+                    </div>
+                </form>
+            </div>
+
+            <div id="admin-menu-list" class="space-y-3">
+                <!-- Master menu items list here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- View 2: Personalized Dashboard (CID mode) -->
+    <div id="view-dashboard" class="page-transition view-active space-y-10">
+        <div id="menu-header" class="flex items-center justify-between mb-10">
+            <h2 class="text-2xl font-bold flex items-center gap-3">
+                <i data-lucide="compass" class="text-cyan-400"></i>
+                Navigasi Dashboard
+            </h2>
+        </div>
+        <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </div>
+
+    <!-- View 3: Sub-Menu View -->
+    <div id="view-detail" class="page-transition view-hidden">
+        <button onclick="navigateTo('grid')" class="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors mb-8 font-bold text-lg group">
+            <i data-lucide="arrow-left" class="group-hover:-translate-x-1 transition-transform"></i> Kembali ke Dashboard
+        </button>
+        <div id="sub-menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        <div id="sub-empty-state" class="hidden text-center py-16 opacity-50 bg-slate-800/20 rounded-3xl border border-slate-800 border-dashed">
+            <i data-lucide="info" class="mx-auto mb-2 text-slate-600" style="width:32px;height:32px"></i>
+            <p class="text-slate-500">Tidak ada sub-menu tersedia.</p>
+        </div>
+    </div>
+
+    <!-- View 4: Iframe In-App -->
+    <div id="view-iframe" class="page-transition view-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 p-4 bg-slate-800/60 rounded-2xl border border-slate-700 backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <button onclick="navigateTo('grid')" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-bold transition-all text-white">
+                    <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i> Dashboard
+                </button>
+                <button id="iframe-back-btn" onclick="handleIframeBack()" class="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-bold transition-all text-white">
+                    <i data-lucide="chevron-left" style="width:16px;height:16px"></i> Kembali ke Menu
+                </button>
+            </div>
+            <div class="hidden sm:flex items-center gap-2 text-slate-400 text-sm font-medium">
+                <i data-lucide="globe" style="width:16px;height:16px"></i>
+                <span id="iframe-url-display" class="truncate max-w-xs"></span>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl overflow-hidden shadow-2xl">
+            <iframe id="app-iframe" class="iframe-container" src="about:blank"></iframe>
+        </div>
+    </div>
+  </main>
+
+  <script>
+        // CORE MEMORY - DATA STORAGE
+        let allData = JSON.parse(localStorage.getItem('ecrew_menus')) || [];
+        let allCrew = JSON.parse(localStorage.getItem('ecrew_members')) || [];
+        let allLinks = JSON.parse(localStorage.getItem('ecrew_personalized_links')) || [];
+        let isAdmin = false;
+        let activeCid = new URLSearchParams(window.location.search).get('cid');
+        let lastParentId = null;
+
+        // NAVIGATION LOGIC
+        function navigateTo(view, parentId = null, url = null) {
+            const views = {
+                'admin': 'view-admin',
+                'grid': 'view-dashboard',
+                'detail': 'view-detail',
+                'iframe': 'view-iframe'
+            };
+            const mainHeader = document.getElementById('main-header');
+            
+            Object.values(views).forEach(vId => {
+                const v = document.getElementById(vId);
+                v.classList.add('view-hidden');
+                setTimeout(() => v.classList.add('hidden'), 400);
+            });
+
+            setTimeout(() => {
+                mainHeader.classList.toggle('hidden', view === 'iframe');
+                const target = document.getElementById(views[view]);
+                target.classList.remove('hidden');
+                target.classList.replace('view-hidden', 'view-active');
+                
+                if (view === 'grid') renderMenus();
+                if (view === 'detail') renderDetailView(parentId);
+                if (view === 'iframe') openIframe(url);
+                if (view === 'admin') renderAdminUI();
+                
+                lucide.createIcons();
+            }, 410);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleIframeBack() {
+            if (lastParentId) navigateTo('detail', lastParentId);
+            else navigateTo('grid');
+        }
+
+        function openIframe(url) {
+            const iframe = document.getElementById('app-iframe');
+            document.getElementById('iframe-url-display').textContent = url;
+            iframe.src = url;
+        }
+
+        // AUTH & ACCESS CONTROL
+        function openLogin() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLogin() { document.getElementById('login-modal').classList.add('hidden'); }
+        function performLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+            if (u === 'admin' && p === 'TWA119-021') {
+                isAdmin = true; closeLogin(); navigateTo('admin');
+            } else { document.getElementById('login-error').classList.remove('hidden'); }
+        }
+        function logout() { isAdmin = false; navigateTo('grid'); }
+
+        // MANAGEMENT RENDERERS
+        function renderAdminUI() {
+            renderAuthControls();
+            renderCrewList();
+            renderLinksList();
+            renderAdminMenuList();
+            updateParentDropdown();
+            updateVisibilityDropdown();
+            lucide.createIcons();
+        }
+
+        function renderAuthControls() {
+            const container = document.getElementById('auth-controls');
+            container.innerHTML = isAdmin ? `
+                <button onclick="logout()" class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500 border border-red-500/50 px-4 py-2 rounded-xl font-bold text-red-400 hover:text-white transition-all"><i data-lucide="log-out"></i> Tutup Management</button>
+            ` : `
+                <button onclick="openLogin()" class="flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl font-bold text-white transition-all"><i data-lucide="lock" class="text-cyan-400"></i></button>
+            `;
+        }
+
+        function renderAdminMenuList() {
+            const list = document.getElementById('admin-menu-list');
+            const mains = allData.filter(d => !d.parent_id);
+            list.innerHTML = mains.map(m => {
+                const subs = allData.filter(d => d.parent_id === m.id);
+                return `
+                    <div class="flex items-center justify-between p-4 bg-slate-800/60 border border-slate-700 rounded-2xl group hover:border-cyan-500/50 transition-all">
+                        <div class="flex items-center gap-4">
+                            ${m.image ? `<img src="${m.image}" class="w-10 h-10 rounded-lg object-cover">` : `<div class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center"><i data-lucide="image" class="text-slate-700"></i></div>`}
+                            <div>
+                                <p class="text-white font-bold">${m.name} <span class="text-xs text-slate-500 ml-2 uppercase tracking-tighter">(${m.visibility === 'all' ? 'Publik' : 'Privat'})</span></p>
+                                <p class="text-xs text-cyan-400 font-medium">${subs.length} Sub-menu Terdaftar</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="toggleForm(${JSON.stringify(m).replace(/"/g, '&quot;')})" class="p-2 text-slate-400 hover:text-cyan-400 transition-colors"><i data-lucide="edit-3" style="width:16px;height:16px"></i></button>
+                            <button onclick="duplicateItem('${m.id}')" class="p-2 text-slate-400 hover:text-emerald-400 transition-colors"><i data-lucide="copy" style="width:16px;height:16px"></i></button>
+                            <button onclick="deleteItem('${m.id}')" class="p-2 text-slate-400 hover:text-red-400 transition-colors"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p class="text-center py-10 text-slate-600 italic">Belum ada master menu yang dibuat.</p>';
+        }
+
+        // PREVIEW POPUP LOGIC
+        function showPersonalPreview(cid) {
+            const linkObj = allLinks.find(l => l.id === cid);
+            if (!linkObj) return;
+
+            document.getElementById('preview-user-title').textContent = `Preview: ${linkObj.name}`;
+            const body = document.getElementById('preview-body');
+            document.getElementById('preview-modal').classList.remove('hidden');
+
+            const filteredMains = allData.filter(m => !m.parent_id && (m.visibility === 'all' || m.visibility === cid));
+            
+            body.innerHTML = `
+                <div class="marquee-container mb-10 rounded-xl">
+                    <div class="marquee-text">Welcome ${linkObj.name} — Personalized Dashboard Loaded. Have a safe flight!</div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${filteredMains.map(menu => `
+                        <div class="menu-card rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 flex flex-col">
+                            <div class="h-32 w-full overflow-hidden border-b border-slate-700">
+                                ${menu.image ? `<img src="${menu.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-slate-900 flex items-center justify-center text-slate-700"><i data-lucide="image"></i></div>`}
+                            </div>
+                            <div class="p-4 text-center">
+                                <h3 class="text-white font-bold text-sm uppercase truncate">${menu.name}</h3>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ${filteredMains.length === 0 ? '<p class="text-center py-20 text-slate-600 italic">Tidak ada menu untuk user ini.</p>' : ''}
+            `;
+            lucide.createIcons();
+        }
+
+        function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }
+
+        // CREW & LINK MANAGEMENT
+        function toggleCrewForm() { document.getElementById('crew-management-panel').classList.toggle('hidden'); }
+
+        function handleCrewSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('crew-name').value.trim();
+            const rank = document.getElementById('crew-rank').value;
+            const newCrew = { id: Date.now().toString(), name, rank };
+            allCrew.push(newCrew);
+            localStorage.setItem('ecrew_members', JSON.stringify(allCrew));
+            document.getElementById('crew-name').value = '';
+            renderCrewList();
+        }
+
+        function generateLinkForCrew(crewId) {
+            const crew = allCrew.find(c => c.id === crewId);
+            const fullName = `${crew.rank}. ${crew.name}`;
+            if (allLinks.some(l => l.name === fullName)) return alert('Link untuk crew ini sudah ada.');
+            
+            const id = Math.random().toString(36).substring(2, 9);
+            const url = window.location.origin + window.location.pathname + "?cid=" + id;
+            allLinks.push({ id, name: fullName, url });
+            localStorage.setItem('ecrew_personalized_links', JSON.stringify(allLinks));
+            renderLinksList();
+            updateVisibilityDropdown();
+        }
+
+        function renderCrewList() {
+            const list = document.getElementById('crew-list');
+            list.innerHTML = allCrew.map(c => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-700/50 group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xs font-bold">${c.rank[0]}</div>
+                        <p class="text-white text-sm font-bold">${c.name} <span class="text-slate-500 font-normal">(${c.rank})</span></p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="generateLinkForCrew('${c.id}')" class="p-2 text-cyan-400 hover:bg-cyan-500/10 rounded-lg"><i data-lucide="link" style="width:14px;height:14px"></i></button>
+                        <button onclick="deleteCrew('${c.id}')" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-center py-4 text-slate-600 text-xs">Kosong.</p>';
+            lucide.createIcons();
+        }
+
+        function renderLinksList() {
+            const list = document.getElementById('links-list');
+            list.innerHTML = allLinks.map(l => `
+                <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-700/50 group hover:border-cyan-500/30 transition-all">
+                    <div class="overflow-hidden">
+                        <p class="text-white font-bold text-sm truncate">${l.name}</p>
+                        <p class="text-slate-500 text-[10px] truncate opacity-50">${l.url}</p>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="showPersonalPreview('${l.id}')" class="p-2 text-indigo-400 hover:bg-indigo-500/10 rounded-lg" title="Preview Tampilan"><i data-lucide="eye" style="width:16px;height:16px"></i></button>
+                        <button onclick="copyToClipboard('${l.url}')" class="p-2 text-cyan-400 hover:bg-cyan-500/10 rounded-lg" title="Salin URL"><i data-lucide="copy" style="width:16px;height:16px"></i></button>
+                        <button onclick="deleteLink('${l.id}')" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg" title="Hapus"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-center py-10 text-slate-700 italic">Belum ada link yang dihasilkan.</p>';
+            lucide.createIcons();
+        }
+
+        function deleteCrew(id) { if(confirm('Hapus Crew?')) { allCrew = allCrew.filter(c => c.id !== id); localStorage.setItem('ecrew_members', JSON.stringify(allCrew)); renderCrewList(); } }
+        function deleteLink(id) { if(confirm('Hapus Link?')) { allLinks = allLinks.filter(l => l.id !== id); localStorage.setItem('ecrew_personalized_links', JSON.stringify(allLinks)); renderLinksList(); updateVisibilityDropdown(); } }
+        function copyToClipboard(t) { const e = document.createElement('textarea'); e.value = t; document.body.appendChild(e); e.select(); document.execCommand('copy'); document.body.removeChild(e); alert('Link disalin!'); }
+
+        // MENU GRID RENDERER (PERSONALIZED)
+        function renderMenus() {
+            const grid = document.getElementById('menu-grid');
+            let mains = allData.filter(d => !d.parent_id);
+            if (activeCid) mains = mains.filter(m => m.visibility === 'all' || m.visibility === activeCid);
+
+            grid.innerHTML = mains.sort((a,b) => (a.order||0) - (b.order||0)).map(menu => {
+                const subs = allData.filter(d => d.parent_id === menu.id);
+                return `
+                    <div class="menu-card group rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 flex flex-col cursor-pointer" onclick="handleMenuClick('${menu.id}')">
+                        <div class="h-48 w-full overflow-hidden border-b border-slate-700/50">
+                            ${menu.image ? `<img src="${menu.image}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">` : `<div class="w-full h-full bg-slate-900 flex items-center justify-center text-slate-700"><i data-lucide="layout" style="width:40px;height:40px"></i></div>`}
+                        </div>
+                        <div class="p-6 text-center"><h3 class="text-white font-bold text-xl uppercase tracking-wide truncate">${menu.name}</h3></div>
+                    </div>
+                `;
+            }).join('') || '<div class="col-span-full py-20 text-center opacity-30 italic"><p>Dashboard Kosong.</p></div>';
+            renderGreeting();
+            lucide.createIcons();
+        }
+
+        function handleMenuClick(id) {
+            const subs = allData.filter(d => d.parent_id === id);
+            const menu = allData.find(m => m.id === id);
+            if (subs.length > 0) navigateTo('detail', id);
+            else if (menu?.url) navigateTo('iframe', id, menu.url);
+        }
+
+        function renderDetailView(parentId) {
+            const subs = allData.filter(d => d.parent_id === parentId).sort((a,b) => (a.order||0) - (b.order||0));
+            const subGrid = document.getElementById('sub-menu-grid');
+            const empty = document.getElementById('sub-empty-state');
+            lastParentId = parentId;
+            
+            subGrid.innerHTML = subs.map(s => `
+                <div class="menu-card group rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 flex flex-col cursor-pointer" onclick="navigateTo('iframe', '${parentId}', '${s.url}')">
+                    <div class="h-40 w-full overflow-hidden border-b border-slate-700/50">
+                        ${s.image ? `<img src="${s.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-slate-900 flex items-center justify-center text-slate-700"><i data-lucide="link-2"></i></div>`}
+                    </div>
+                    <div class="p-4 text-center"><h4 class="text-white font-bold text-lg truncate px-2">${s.name}</h4></div>
+                </div>
+            `).join('');
+            
+            if (subs.length === 0) empty.classList.remove('hidden');
+            else empty.classList.add('hidden');
+            lucide.createIcons();
+        }
+
+        function renderGreeting() {
+            const marquee = document.getElementById('greeting-marquee');
+            const content = document.getElementById('marquee-content');
+            let text = "";
+            if (activeCid) {
+                const linkObj = allLinks.find(l => l.id === activeCid);
+                if (linkObj) text = `Welcome ${linkObj.name} — Personalized Dashboard Loaded. Have a safe flight!`;
+            } else if (allCrew.length > 0) {
+                const last = allCrew[allCrew.length - 1];
+                text = `Welcome ${last.rank}. ${last.name} — Have a safe flight and happy duty!`;
+            }
+            if (text && !isAdmin) { content.textContent = text; marquee.classList.remove('hidden'); }
+            else { marquee.classList.add('hidden'); }
+        }
+
+        // MENU FORM ACTIONS
+        function toggleForm(data = null) {
+            const f = document.getElementById('menu-form');
+            if (data) {
+                f.classList.remove('hidden');
+                document.getElementById('edit-id').value = data.id;
+                document.getElementById('menu-name').value = data.name;
+                document.getElementById('menu-url').value = data.url || '';
+                document.getElementById('menu-image').value = data.image || '';
+                document.getElementById('menu-parent').value = data.parent_id || '';
+                document.getElementById('menu-visibility').value = data.visibility || 'all';
+                f.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                f.classList.toggle('hidden');
+                document.getElementById('add-form').reset();
+                document.getElementById('edit-id').value = '';
+                document.getElementById('preview-img').classList.add('hidden');
+            }
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('menu-name').value.trim();
+            const url = document.getElementById('menu-url').value.trim();
+            const parent_id = document.getElementById('menu-parent').value;
+            const visibility = document.getElementById('menu-visibility').value;
+            const image = convertGoogleDriveUrl(document.getElementById('menu-image').value.trim());
+
+            if (id) {
+                const idx = allData.findIndex(d => d.id === id);
+                allData[idx] = { ...allData[idx], name, url, parent_id, image, visibility };
+            } else {
+                allData.push({ id: Date.now().toString(), name, url, parent_id, image, visibility, order: allData.length });
+            }
+            localStorage.setItem('ecrew_menus', JSON.stringify(allData));
+            toggleForm(); renderAdminUI();
+        }
+
+        function deleteItem(id) { if(confirm('Hapus menu?')) { allData = allData.filter(d => d.id !== id && d.parent_id !== id); localStorage.setItem('ecrew_menus', JSON.stringify(allData)); renderAdminUI(); } }
+        function duplicateItem(id) { const o = allData.find(d => d.id === id); if(o) { allData.push({ ...o, id: Date.now().toString(), name: o.name + " (Copy)" }); localStorage.setItem('ecrew_menus', JSON.stringify(allData)); renderAdminUI(); } }
+        
+        function convertGoogleDriveUrl(url) { 
+            const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/) || url.match(/id=([a-zA-Z0-9-_]+)/); 
+            return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url; 
+        }
+
+        function updateParentDropdown() {
+            const sel = document.getElementById('menu-parent');
+            sel.innerHTML = '<option value="">— Menu Utama —</option>' + allData.filter(d => !d.parent_id).map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+        }
+
+        function updateVisibilityDropdown() {
+            const sel = document.getElementById('menu-visibility');
+            sel.innerHTML = '<option value="all">Semua Crew (Publik)</option>' + allLinks.map(l => `<option value="${l.id}">Khusus: ${l.name}</option>`).join('');
+        }
+
+        document.getElementById('menu-image').addEventListener('input', function(e) {
+            const url = e.target.value.trim();
+            const img = document.getElementById('preview-img');
+            if (url) { img.src = convertGoogleDriveUrl(url); img.classList.remove('hidden'); document.getElementById('preview-placeholder').classList.add('hidden'); }
+            else { img.classList.add('hidden'); document.getElementById('preview-placeholder').classList.remove('hidden'); }
+        });
+
+        // INITIAL LOAD
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAuthControls();
+            renderMenus();
+        });
+    </script>
+ </body>
+</html>
