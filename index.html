@@ -2,934 +2,556 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Air Crew Document - Transwisata Prima Aviation</title>
-    
-    <!-- PWA & Mobile Meta Tags -->
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="AirCrewDoc">
-    
-    <!-- Favicon & Icons -->
-    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7">
-    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7">
-    
-    <!-- Manifest Dynamic Generation -->
-    <script id="pwa-manifest">
-        const manifest = {
-            "name": "Air Crew Document Portal",
-            "short_name": "AirCrewDoc",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#0f172a",
-            "theme_color": "#0f172a",
-            "description": "Portal Manajemen Dokumen Kru Transwisata Prima Aviation",
-            "icons": [
-                {
-                    "src": "https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7",
-                    "sizes": "192x192",
-                    "type": "image/png",
-                    "purpose": "any maskable"
-                },
-                {
-                    "src": "https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7",
-                    "sizes": "512x512",
-                    "type": "image/png"
-                }
-            ]
-        };
-        const stringManifest = JSON.stringify(manifest);
-        const blob = new Blob([stringManifest], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = manifestURL;
-        document.head.appendChild(link);
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Custom Dashboard Creator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- PDF Generation Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .aviation-blue { background-color: #0f172a; }
-        .aviation-accent { color: #f59e0b; }
-        .sidebar-active { border-right: 4px solid #f59e0b; background-color: #1e293b; }
-        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
-        .document-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 0.75rem; 
-        }
-        @media (min-width: 768px) {
-            .document-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 1.5rem;
-            }
+        :root {
+            --primary: #4f46e5;
+            --secondary: #6366f1;
         }
 
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-backdrop { background-color: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); }
-        
-        /* Fixed Aspect Ratios for Grid Slots */
-        .license-slot, .landscape-slot, .idcard-slot, .passport-slot { 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            cursor: pointer; 
-            border-radius: 1.25rem; 
-            border: 2px solid #e2e8f0; 
-            background-color: #ffffff;
-            position: relative;
-            width: 100%;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fcfcfd;
+            overscroll-behavior: none;
+            margin: 0;
+            padding: 0;
         }
-        .license-slot { aspect-ratio: 3/4; }
-        .landscape-slot { aspect-ratio: 16/10; }
-        .idcard-slot { aspect-ratio: 85/54; }
-        .passport-slot { aspect-ratio: 35/45; }
-        
-        .license-slot:hover, .landscape-slot:hover, .idcard-slot:hover, .passport-slot:hover { 
-            border-color: #f59e0b; 
-            background-color: #fffbeb; 
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+
+        /* Glassmorphism Effect */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
-        
-        #pdfExportGrid { width: 800px; position: absolute; left: -9999px; top: 0; background: white; }
-        .pdf-page-wrapper, .pdf-two-box-wrapper, .pdf-ktp-wrapper, .pdf-passport-wrapper { width: 800px; height: 1131px; padding: 50px; display: grid; background: white; box-sizing: border-box; }
-        .pdf-page-wrapper { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 20px; }
-        .pdf-two-box-wrapper { grid-template-columns: 1fr; grid-template-rows: repeat(2, 1fr); gap: 20px; }
-        .pdf-ktp-wrapper { flex-direction: column; align-items: center; gap: 40px; padding: 100px 50px; display: flex; }
-        .pdf-passport-wrapper { flex-direction: column; align-items: center; gap: 50px; padding: 80px 50px; display: flex; }
-        .pdf-landscape-wrapper { width: 1131px; height: 800px; padding: 40px; background: white; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        #toast { visibility: hidden; min-width: 280px; margin-left: -140px; background-color: #0f172a; color: #fff; text-align: center; border-radius: 12px; padding: 16px; position: fixed; z-index: 300; left: 50%; bottom: 40px; font-size: 13px; font-weight: 600; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255,255,255,0.1); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 40px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 40px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-        
-        .qual-checkbox:checked + label { 
-            background-color: #f59e0b !important; 
-            color: #0f172a !important; 
-            border-color: #f59e0b !important; 
+
+        /* Squircle Icon Style */
+        .squircle {
+            border-radius: 24%;
+            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+
+        .squircle:active {
+            transform: scale(0.9);
+        }
+
+        /* Direct Mode Background - Full Screen Gradient */
+        .direct-bg {
+            background: radial-gradient(circle at top right, #f5f3ff 0%, #ffffff 50%),
+                        radial-gradient(circle at bottom left, #eff6ff 0%, #ffffff 50%);
+            background-attachment: fixed;
+        }
+
+        /* Animation */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; }
         
-        .sync-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        iframe { 
+            height: 100%; 
+            width: 100%; 
+            border: none; 
+        }
+
+        /* Checkbox Switch Styling */
+        input:checked + .checkbox-bg { background-color: var(--primary); }
+
+        /* Ensure content doesn't get cut off on long phones */
+        #app {
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden text-slate-800">
+<body class="min-h-screen flex justify-center selection:bg-indigo-100">
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900 p-4">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 fade-in">
-            <div class="flex flex-col items-center mb-8">
-                <div class="w-20 h-20 bg-slate-50 rounded-2xl p-2 shadow-inner mb-4 border border-slate-100">
-                    <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
-                </div>
-                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Crew Document Portal</h2>
-                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 italic aviation-accent">Transwisata Prima Aviation</p>
+    <div id="app" class="w-full max-w-md min-h-screen bg-white relative overflow-hidden flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)] transition-colors duration-500">
+        
+        <!-- Header (Sembunyi otomatis di Direct Mode dashboard) -->
+        <header id="main-header" class="px-6 py-6 flex justify-between items-center bg-white/80 sticky top-0 z-40 shrink-0">
+            <div id="header-text">
+                <h1 id="view-title" class="text-2xl font-extrabold tracking-tight text-slate-900 leading-none">Dashboard</h1>
+                <p id="view-subtitle" class="text-[10px] text-indigo-500 uppercase tracking-[0.2em] font-bold mt-1.5">Creator Studio</p>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Username / Email</label>
-                    <input type="text" id="loginUsername" required class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:border-amber-500 transition-all" placeholder="admin atau email anda">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Password</label>
-                    <input type="password" id="loginPassword" required class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:border-amber-500 transition-all" placeholder="********">
-                </div>
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-slate-900/20 hover:bg-slate-800">Masuk Aplikasi</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MAIN APP WRAPPER -->
-    <div id="mainApp" class="flex w-full h-full hidden">
-        <div id="mobileOverlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="toggleMobileMenu()"></div>
-
-        <aside id="mainSidebar" class="w-80 aviation-blue text-white flex flex-col fixed inset-y-0 left-0 z-50 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl">
-            <div class="p-6 border-b border-slate-800">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white rounded-xl p-1 shadow-inner">
-                            <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
-                        </div>
-                        <div>
-                            <h1 class="text-lg font-bold tracking-tighter uppercase aviation-accent italic leading-none">Transwisata</h1>
-                            <p class="text-[8px] text-slate-400 font-medium tracking-[0.2em] uppercase">Prima Aviation</p>
-                        </div>
-                    </div>
-                    <button class="md:hidden text-slate-400 p-2" onclick="toggleMobileMenu()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
-                
-                <!-- Admin Only Actions -->
-                <div class="space-y-3 admin-only">
-                    <button onclick="openAddCrewModal()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                        Tambah Crew
-                    </button>
-                    <button onclick="openAddDocModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-slate-700">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        Tambah Dokument
-                    </button>
-                </div>
-            </div>
-
-            <div class="p-4 bg-slate-900/50 admin-only">
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </span>
-                    <input type="text" id="crewSearch" placeholder="Cari Personil..." class="w-full bg-slate-800 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all border-none placeholder-slate-500" onkeyup="filterCrew()">
-                </div>
-            </div>
-
-            <nav class="flex-1 overflow-y-auto custom-scrollbar admin-only" id="crewList"></nav>
-            
-            <div class="p-6 border-t border-slate-800 bg-slate-900/50 space-y-4 mt-auto">
-                <div class="flex items-center gap-3 px-1 mb-2">
-                    <div id="syncIndicator" class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <p id="syncText" class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Cloud Connected</p>
-                </div>
-                
-                <button onclick="pullDataFromCloud()" class="w-full flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-amber-500 transition-colors group admin-only">
-                    <span>Sinkronisasi Cloud</span>
-                    <svg id="sidebarSyncIcon" class="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <div class="flex gap-2" id="header-nav">
+                <button id="back-btn-header" class="hidden p-2.5 bg-slate-100 text-slate-600 rounded-2xl active:scale-90 transition-all">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </button>
-                <button onclick="handleLogout()" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-red-500/20">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    Keluar Aplikasi
+                <button id="home-btn" class="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-2xl active:scale-90 transition-all">
+                    <i data-lucide="layout-grid" class="w-5 h-5"></i>
                 </button>
             </div>
-        </aside>
+        </header>
 
-        <main class="flex-1 overflow-y-auto flex flex-col w-full bg-slate-50">
-            <header class="bg-white border-b border-slate-200 px-6 md:px-10 py-5 flex justify-between items-center sticky top-0 z-30 shadow-sm">
-                <div class="flex items-center gap-4">
-                    <button class="md:hidden text-slate-600 p-2 hover:bg-slate-100 rounded-xl transition-colors" onclick="toggleMobileMenu()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Crew Document Library</h2>
-                        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider" id="headerSubtext">Management Portal</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button onclick="pullDataFromCloud()" id="headerSyncBtn" class="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-100 shadow-sm">
-                        <svg id="headerSyncIcon" class="w-3 h-3 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        <span class="hidden md:inline">Sync Cloud</span>
-                    </button>
-                    <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden p-1">
-                       <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
-                    </div>
-                </div>
-            </header>
-
-            <div id="contentPlaceholder" class="p-6 md:p-10 flex-1">
-                <div id="welcomeScreen" class="flex flex-col items-center justify-center py-32 text-center fade-in">
-                    <div class="w-32 h-32 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center mb-8 p-4 border border-slate-100">
-                        <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
-                    </div>
-                    <h3 class="text-2xl font-bold text-slate-800">Selamat Datang</h3>
-                    <p class="text-slate-400 max-w-sm mt-3 font-medium">Pilih personil dari sidebar untuk mengelola dokumen operasional dan kualifikasi.</p>
-                </div>
-
-                <div id="crewDetailView" class="hidden fade-in">
-                    <div class="flex flex-col xl:flex-row gap-10">
-                        <div class="xl:w-1/3">
-                            <div class="glass-card rounded-[2.5rem] p-5 md:p-10 shadow-xl border-t-8 border-amber-500 sticky top-28">
-                                <div class="flex flex-col items-center mb-10">
-                                    <div id="detAvatarContainer" class="w-40 h-40 rounded-[3rem] bg-slate-50 border-8 border-white shadow-2xl overflow-hidden mb-6 flex items-center justify-center"></div>
-                                    <h2 class="text-3xl font-black text-slate-900 text-center leading-tight" id="detName">-</h2>
-                                    <span class="px-6 py-2 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-[0.3em] mt-5 shadow-lg shadow-slate-900/30" id="detRank">-</span>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2 border-t border-slate-100 pt-8 mt-4">
-                                    <div class="flex flex-col items-center border-r border-slate-100 pr-2">
-                                        <span class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">License No</span>
-                                        <span class="text-xs md:text-sm font-extrabold text-slate-800 truncate w-full text-center" id="detLicenseNo">-</span>
-                                    </div>
-                                    <div class="flex flex-col items-center pl-2">
-                                        <span class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Qualification</span>
-                                        <span class="text-xs md:text-sm font-extrabold text-slate-800 leading-tight text-center" id="detQualification">-</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="xl:w-2/3">
-                            <div class="mb-8 px-1 md:px-0 flex justify-between items-end">
-                                <div>
-                                    <h3 class="text-2xl font-black text-slate-900 tracking-tight">Dokumen Kru</h3>
-                                    <p class="text-xs text-slate-400 font-medium mt-1 uppercase tracking-wider">Silakan kelola berkas di bawah ini</p>
-                                </div>
-                            </div>
-                            <div class="document-grid" id="documentContainer"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+            <!-- Konten dinamis akan dimuat di sini -->
         </main>
-    </div>
 
-    <!-- MODALS -->
-    <div id="deleteConfirmModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="modal-backdrop absolute inset-0"></div>
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl z-10 p-8 text-center">
-            <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </div>
-            <h3 class="text-xl font-black text-slate-900 mb-2">Hapus Personil?</h3>
-            <p class="text-sm text-slate-500 mb-8">Data akan dihapus permanen dari aplikasi dan Google Sheets.</p>
-            <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Batal</button>
-                <button id="confirmDeleteBtn" class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Hapus</button>
-            </div>
-        </div>
-    </div>
+        <!-- Bottom Navigation (Hanya untuk Admin) -->
+        <nav id="bottom-nav" class="glass-nav border-t border-slate-50 flex justify-around items-center px-6 py-4 sticky bottom-0 z-40 shrink-0 transition-transform duration-500">
+            <button onclick="router.navigate('list')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-indigo-600 transition-colors">
+                <i data-lucide="grid" class="w-5 h-5"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Daftar</span>
+            </button>
+            
+            <button onclick="router.navigate('create')" class="relative -top-8 flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-[2rem] shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:scale-110 active:scale-95 transition-all">
+                <i data-lucide="plus" class="w-8 h-8"></i>
+            </button>
 
-    <div id="docDeleteConfirmModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
-        <div class="modal-backdrop absolute inset-0"></div>
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl z-10 p-8 text-center">
-            <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </div>
-            <h3 class="text-xl font-black text-slate-900 mb-2">Hapus Menu Dokument?</h3>
-            <p class="text-sm text-slate-500 mb-8">Kategori ini akan dihapus dari seluruh personil di cloud.</p>
-            <div class="flex gap-3">
-                <button onclick="closeDocDeleteModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Batal</button>
-                <button id="confirmDocDeleteBtn" class="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Hapus Menu</button>
-            </div>
-        </div>
+            <button onclick="router.navigate('settings')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-indigo-600 transition-colors">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Opsi</span>
+            </button>
+        </nav>
     </div>
-
-    <div id="fileDeleteConfirmModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4">
-        <div class="modal-backdrop absolute inset-0"></div>
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl z-10 p-8 text-center">
-            <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            </div>
-            <h3 class="text-xl font-black text-slate-900 mb-2">Kosongkan Berkas?</h3>
-            <p class="text-sm text-slate-500 mb-8">Gambar di halaman ini akan dihapus. Aplikasi akan segera sinkron ke Google Sheet setelah Anda menekan tombol Hapus.</p>
-            <div class="flex gap-3">
-                <button onclick="closeFileDeleteModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Batal</button>
-                <button id="confirmFileDeleteBtn" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Hapus</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="docFormModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
-        <div class="modal-backdrop absolute inset-0" onclick="closeDocModal()"></div>
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl z-10 flex flex-col overflow-hidden">
-            <div class="px-8 py-6 bg-slate-50 border-b flex justify-between items-center">
-                <h3 class="font-black text-slate-900 uppercase tracking-widest">Tambah Menu Dokument</h3>
-                <button onclick="closeDocModal()" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <form onsubmit="handleDocSubmit(event)" class="p-8 space-y-6">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Nama Dokument</label>
-                    <input type="text" id="newDocName" required class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500" placeholder="Contoh: Visa, Sertifikat Training">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Jumlah Halaman</label>
-                        <select id="newDocPages" class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500"></select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Format Grid</label>
-                        <select id="newDocLayout" class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500">
-                            <option value="portrait">Portrait</option>
-                            <option value="landscape">Landscape</option>
-                            <option value="idcard">ID Card</option>
-                            <option value="passport">Passport</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-slate-800">Tambahkan Menu</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="gridModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-2 md:p-10">
-        <div class="modal-backdrop absolute inset-0" onclick="closeGridModal()"></div>
-        <div class="bg-white w-full max-w-6xl max-h-[90vh] rounded-[2rem] md:rounded-[2.5rem] shadow-2xl z-10 flex flex-col overflow-hidden">
-            <div class="px-4 md:px-8 py-5 md:py-8 aviation-blue text-white flex justify-between items-center shrink-0">
-                <div>
-                    <h2 class="text-lg md:text-2xl font-black tracking-tight" id="gridModalTitle">Preview</h2>
-                    <p class="text-[8px] md:text-[10px] text-amber-500 uppercase tracking-[0.2em] font-bold mt-1 md:mt-2" id="gridModalCrewName">-</p>
-                </div>
-                <div class="flex gap-2 md:gap-4">
-                    <button onclick="syncAndCloseGrid()" class="bg-emerald-500 text-white px-3 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest shadow-lg hover:bg-emerald-600">Simpan</button>
-                    <button onclick="downloadMultiPagePDF()" class="bg-amber-500 text-slate-900 px-3 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest shadow-lg hover:bg-amber-600">PDF</button>
-                    <button onclick="closeGridModal()" class="text-white/50 hover:text-white ml-2"><svg class="w-6 h-6 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                </div>
-            </div>
-            <div class="p-6 md:p-12 overflow-y-auto flex-1 bg-slate-50">
-                <div id="gridPageContainer" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="crewFormModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
-        <div class="modal-backdrop absolute inset-0" onclick="closeCrewModal()"></div>
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl z-10 flex flex-col overflow-hidden">
-            <div class="px-8 py-6 bg-slate-50 border-b flex justify-between items-center">
-                <h3 class="font-black text-slate-900 uppercase tracking-widest" id="crewFormTitle">Registrasi Kru</h3>
-                <button onclick="closeCrewModal()" class="text-slate-400 hover:text-slate-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <form onsubmit="handleCrewSubmit(event)" class="p-8 space-y-5 max-h-[75vh] overflow-y-auto custom-scrollbar">
-                <div class="flex flex-col items-center">
-                    <div id="formPhotoPreviewContainer" class="w-24 h-24 rounded-3xl bg-slate-100 flex items-center justify-center mb-3 overflow-hidden border-4 border-white shadow-md relative group cursor-pointer" onclick="triggerProfilePhotoUpload()">
-                        <img id="formPhotoPreview" src="" class="hidden w-full h-full object-cover" alt="Preview">
-                        <div id="formPhotoIcon"><svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
-                    </div>
-                    <input type="file" id="crewProfilePhotoInput" class="hidden" accept="image/*" onchange="handleCrewProfileUpload(event)">
-                </div>
-                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Nama Lengkap</label><input type="text" id="crewName" required class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500" placeholder="Contoh: Muhamad Ramdani Masri"></div>
-                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Email</label><input type="email" id="crewEmail" required class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500" oninput="autoPopulateUsername(this.value)"></div>
-                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Username</label><input type="text" id="crewUsername" required class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500"></div>
-                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Password</label><input type="password" id="crewPassword" required class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500"></div>
-                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">License No</label><input type="text" id="crewLicenseNo" required class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-amber-500"></div>
-                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Rank</label><select id="crewRank" class="w-full px-5 py-3 bg-slate-100 rounded-2xl text-sm font-bold border border-transparent focus:border-amber-500"><option value="Captain">Captain</option><option value="First Officer">First Officer</option><option value="Cabin Service">Cabin Service</option><option value="Engineer">Engineer</option></select></div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest">Qualification</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <input type="checkbox" id="qualCCP" value="CCP" class="qual-checkbox hidden">
-                        <label for="qualCCP" class="flex items-center justify-center py-2 px-4 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer border-2 border-transparent transition-all text-slate-500">CCP</label>
-                        <input type="checkbox" id="qualFI" value="FI" class="qual-checkbox hidden">
-                        <label for="qualFI" class="flex items-center justify-center py-2 px-4 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer border-2 border-transparent transition-all text-slate-500">FI</label>
-                        <input type="checkbox" id="qualGI" value="GI" class="qual-checkbox hidden">
-                        <label for="qualGI" class="flex items-center justify-center py-2 px-4 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer border-2 border-transparent transition-all text-slate-500">GI</label>
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-amber-500 text-slate-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-amber-600 mb-4" id="crewSubmitBtn">Simpan & Sinkron</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="pdfExportGrid"></div>
-    <div id="toast">Berhasil!</div>
 
     <script>
-        // Register Dummy Service Worker for PWA Criteria
-        if ('serviceWorker' in navigator) {
-            const swCode = "self.addEventListener('fetch', function(event) {});";
-            const swBlob = new Blob([swCode], {type: 'application/javascript'});
-            const swURL = URL.createObjectURL(swBlob);
-            navigator.serviceWorker.register(swURL).catch(() => {});
-        }
+        let state = {
+            menus: JSON.parse(localStorage.getItem('custom_menus')) || [],
+            currentView: 'list',
+            editingIndex: null,
+            tempApps: [],
+            tempOwnerName: "",
+            editingTempAppIndex: null,
+            currentMenuIndex: null,
+            currentFolderId: null,
+            isInitialLoad: true,
+            isDirectMode: false
+        };
 
-        const DATABASE_URL = "https://script.google.com/macros/s/AKfycbyVMKuv7QTeYrsLeUganZzZ-mZGV4hw2l9CGwStBtF5LEUAeUNlWlXcxH-WUmi_A-3g/exec"; 
+        const saveState = () => localStorage.setItem('custom_menus', JSON.stringify(state.menus));
 
-        let crewData = JSON.parse(localStorage.getItem('crewData')) || [];
-        let customDocTypes = JSON.parse(localStorage.getItem('customDocTypes')) || [];
-        let selectedCrewId = null, editingCrewId = null, currentFormPhotoBase64 = null, activeGridType = 'license', crewToDeleteId = null, docToDeleteId = null;
-        let fileToDeleteIndex = null, fileToDeleteType = null;
-        let currentUserRole = null;
-
-        const defaultDocTypes = [
-            { id: 'license', name: "License", pages: 10, layout: 'portrait' },
-            { id: 'medical', name: "Medical Certificate", pages: 2, layout: 'portrait' },
-            { id: 'passport', name: "Passport", pages: 2, layout: 'passport' },
-            { id: 'ktp', name: "KTP", pages: 2, layout: 'idcard' },
-            { id: 'kk', name: "Family Card", pages: 1, layout: 'landscape' }
-        ];
-
-        function init() { 
-            populatePageSelect();
-            setupConfirmButtons();
-            checkDirectAccess();
-            if (DATABASE_URL) pullDataFromCloud(true);
-        }
-
-        function setupConfirmButtons() {
-            const btnDel = document.getElementById('confirmDeleteBtn');
-            if (btnDel) {
-                btnDel.onclick = async () => {
-                    if(crewToDeleteId) {
-                        const idToDelete = crewToDeleteId;
-                        crewData = crewData.filter(c => c.id !== idToDelete);
-                        if(selectedCrewId === idToDelete) { 
-                            selectedCrewId = null; 
-                            document.getElementById('welcomeScreen').classList.remove('hidden'); 
-                            document.getElementById('crewDetailView').classList.add('hidden'); 
-                        }
-                        renderCrewList(crewData); 
-                        updateStats(); 
-                        closeDeleteModal();
-                        await syncDeleteToCloud(idToDelete);
-                    }
-                };
+        const fixDriveUrl = (url) => {
+            if (!url) return "";
+            const driveMatch = url.match(/\/file\/d\/([^\/\?]+)/) || url.match(/id=([^\&]+)/);
+            if (driveMatch && (url.includes('drive.google.com') || url.includes('docs.google.com'))) {
+                return `https://drive.google.com/thumbnail?authuser=0&sz=w600&id=${driveMatch[1]}`;
             }
+            return url;
+        };
 
-            const btnDocDel = document.getElementById('confirmDocDeleteBtn');
-            if (btnDocDel) {
-                btnDocDel.onclick = async () => {
-                    if(docToDeleteId) {
-                        const id = docToDeleteId;
-                        customDocTypes = customDocTypes.filter(d => d.id !== id);
-                        crewData.forEach(crew => { 
-                            if (crew[`${id}Pages`]) {
-                                crew[`${id}Pages`] = null;
-                            }
-                        });
-                        updateStats();
-                        closeDocDeleteModal();
-                        showToast("Menu Dokument Dihapus");
-                        
-                        if (selectedCrewId) {
-                            const current = crewData.find(c => c.id === selectedCrewId);
-                            if (current) await syncToGoogleSheet(current);
-                            selectCrew(selectedCrewId);
-                        }
-                    }
-                };
-            }
+        window.handleImgError = (img) => {
+            img.style.display = 'none';
+            const fallback = img.nextElementSibling;
+            if (fallback) fallback.classList.remove('hidden');
+        };
 
-            const btnFileDel = document.getElementById('confirmFileDeleteBtn');
-            if (btnFileDel) {
-                btnFileDel.onclick = async () => {
-                    if (fileToDeleteIndex !== null && fileToDeleteType !== null) {
-                        const idx = crewData.findIndex(c => c.id === selectedCrewId);
-                        if (idx !== -1) {
-                            crewData[idx][`${fileToDeleteType}Pages`][fileToDeleteIndex] = null;
-                            renderGridPages(crewData[idx], fileToDeleteType); 
-                            renderDocumentCards(crewData[idx]); 
-                            updateStats();
-                            await syncToGoogleSheet(crewData[idx]);
-                            showToast("Berkas berhasil dihapus");
-                        }
-                    }
-                    closeFileDeleteModal();
-                };
-            }
-        }
+        const copyText = (textId) => {
+            const copyInput = document.getElementById(textId);
+            copyInput.select();
+            document.execCommand("copy");
+            const btn = document.getElementById('copy-btn');
+            btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-500"></i>';
+            lucide.createIcons();
+            setTimeout(() => { btn.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i>'; lucide.createIcons(); }, 2000);
+        };
 
-        async function downloadMultiPagePDF() {
-            const { jsPDF } = window.jspdf;
-            const crew = crewData.find(c => c.id === selectedCrewId);
-            if(!crew) return;
-
-            const container = document.getElementById('pdfExportGrid');
-            container.innerHTML = '';
+        const renderList = () => {
+            const container = document.getElementById('main-content');
+            const appWrapper = document.getElementById('app');
             
-            const docDef = [...defaultDocTypes, ...customDocTypes, {id:'ccp', pages:2, layout:'portrait'}, {id:'loa', pages:2, layout:'portrait'}].find(d => d.id === activeGridType);
-            const layoutType = docDef?.layout || 'portrait';
-            const pages = [...(crew[`${activeGridType}Pages`] || [])];
-            
-            const isID = layoutType === 'idcard', isPassport = layoutType === 'passport', isLandscape = layoutType === 'landscape';
-            const reqSlots = (isID || isPassport) ? 2 : (isLandscape ? 1 : 4);
-            
-            while(pages.length < reqSlots) pages.push(null);
-            
-            const chunks = [];
-            for (let i = 0; i < pages.length; i += reqSlots) chunks.push(pages.slice(i, i + reqSlots));
-            
-            const orientation = isLandscape ? 'l' : 'p';
-            const pdfDoc = new jsPDF(orientation, 'mm', 'a4');
-            
-            for (let i = 0; i < chunks.length; i++) {
-                const wrapper = document.createElement('div');
-                if (isID) wrapper.className = 'pdf-ktp-wrapper';
-                else if (isPassport) wrapper.className = 'pdf-passport-wrapper';
-                else if (isLandscape) wrapper.className = 'pdf-landscape-wrapper';
-                else if (reqSlots === 2) wrapper.className = 'pdf-two-box-wrapper';
-                else wrapper.className = 'pdf-page-wrapper';
-                
-                chunks[i].forEach(f => {
-                    const card = document.createElement('div');
-                    let styles = `background:#fff; ${f?.data ? 'border:1px solid #e2e8f0;' : 'border:none;'} border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;`;
-                    if(isID) styles += ` width: 325px; height: 205px;`;
-                    else if(isPassport) styles += ` width: 475px; height: 334px;`;
-                    else styles += ` width: 100%; height: 100%;`;
-                    card.style.cssText = styles;
-                    if (f?.data) {
-                        card.innerHTML = `<img src="${getDirectImgUrl(f.data)}" style="width:100%; height:100%; object-fit:fill;">`;
-                    }
-                    wrapper.appendChild(card);
-                });
-                
-                container.appendChild(wrapper);
-                const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true });
-                if (i > 0) pdfDoc.addPage();
-                pdfDoc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, (isLandscape ? 297 : 210), (isLandscape ? 210 : 297), null, 'FAST');
-            }
-            
-            pdfDoc.save(`${activeGridType}_${crew.name}.pdf`);
-            container.innerHTML = '';
-        }
+            appWrapper.className = appWrapper.className.replace('direct-bg', '');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('bottom-nav').style.transform = 'translateY(0)';
+            document.getElementById('back-btn-header').classList.add('hidden');
+            document.getElementById('view-title').innerText = "Dashboard";
+            document.getElementById('view-subtitle').innerText = "Koleksi Proyek";
 
-        function checkDirectAccess() {
-            const params = new URLSearchParams(window.location.search);
-            const directCrewId = params.get('crewId');
-            if (directCrewId) {
-                const crew = crewData.find(c => c.id == directCrewId);
-                if (crew) enterApp('crew', crew);
-                else {
-                    const checkInterval = setInterval(() => {
-                        const found = crewData.find(c => c.id == directCrewId);
-                        if (found) { enterApp('crew', found); clearInterval(checkInterval); }
-                    }, 500);
-                    setTimeout(() => clearInterval(checkInterval), 5000);
-                }
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('loginUsername').value;
-            const p = document.getElementById('loginPassword').value;
-            if (u === 'admin' && p === 'TWA119-021') { enterApp('admin'); return; }
-            const foundCrew = crewData.find(c => (c.email === u || c.username === u) && c.password === p);
-            if (foundCrew) enterApp('crew', foundCrew);
-            else showToast("Login Gagal!");
-        }
-
-        function enterApp(role, crewObj = null) {
-            currentUserRole = role;
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            if (role === 'admin') {
-                document.getElementById('headerSubtext').innerText = "Administrator Panel";
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-                renderCrewList(crewData);
-                document.getElementById('welcomeScreen').classList.remove('hidden');
-                document.getElementById('crewDetailView').classList.add('hidden');
-            } else {
-                document.getElementById('headerSubtext').innerText = "Crew Personnel Portal";
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-                selectCrew(crewObj.id);
-            }
-            showToast(`Halo, ${role === 'admin' ? 'Admin' : crewObj.name}`);
-        }
-
-        function handleLogout() {
-            currentUserRole = null; selectedCrewId = null;
-            const url = new URL(window.location);
-            url.searchParams.delete('crewId');
-            window.history.replaceState({}, '', url);
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-        }
-
-        function generateDirectLink(crewId) {
-            const baseUrl = window.location.origin + window.location.pathname;
-            const fullLink = `${baseUrl}?crewId=${crewId}`;
-            const el = document.createElement('textarea');
-            el.value = fullLink;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showToast("Tautan langsung disalin!");
-        }
-
-        function updateStats() { 
-            localStorage.setItem('crewData', JSON.stringify(crewData)); 
-            localStorage.setItem('customDocTypes', JSON.stringify(customDocTypes));
-        }
-
-        function renderCrewList(data) {
-            const list = document.getElementById('crewList'); 
-            if(!list) return;
-            list.innerHTML = '';
-            data.forEach(crew => {
-                const item = document.createElement('div');
-                item.className = `p-3 md:p-5 border-b border-slate-800/30 cursor-pointer hover:bg-slate-800/40 transition-all flex items-center justify-between group ${selectedCrewId === crew.id ? 'sidebar-active' : ''}`;
-                const imgSrc = getDirectImgUrl(crew.profilePhoto);
-                const avatar = imgSrc ? `<img src="${imgSrc}" class="w-full h-full object-cover">` : '<span class="text-[10px] font-black aviation-accent">TW</span>';
-                item.innerHTML = `<div class="flex items-center gap-3 flex-1 min-w-0" onclick="selectCrew(${crew.id})">
-                    <div class="w-10 h-10 rounded-xl aviation-blue flex items-center justify-center border border-slate-700 overflow-hidden shrink-0">${avatar}</div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-xs font-bold text-white/90 truncate">${crew.name}</p>
-                        <p class="text-[8px] text-slate-500 font-black uppercase">${crew.licenseNo}</p>
+            if (state.menus.length === 0) {
+                container.innerHTML = `
+                    <div class="flex-1 flex flex-col items-center justify-center py-20 px-10 text-center animate-slide-up">
+                        <div class="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 text-slate-200"><i data-lucide="layout" class="w-10 h-10"></i></div>
+                        <h3 class="text-lg font-bold text-slate-800">Mulai Buat Proyek</h3>
+                        <p class="text-sm text-slate-400 mt-2">Daftar dashboard Anda akan muncul di sini.</p>
                     </div>
-                </div><div class="flex gap-1 opacity-0 group-hover:opacity-100">
-                    <button onclick="event.stopPropagation(); generateDirectLink(${crew.id})" class="p-2 text-slate-500 hover:text-emerald-500"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></button>
-                    <button onclick="event.stopPropagation(); openEditCrewModal(${crew.id})" class="p-2 text-slate-500 hover:text-amber-500"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 00 2 2h14a2 2 0 00 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button onclick="event.stopPropagation(); openDeleteModal(${crew.id})" class="p-2 text-slate-500 hover:text-red-500"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                </div>`;
-                list.appendChild(item);
-            });
-        }
-
-        async function pullDataFromCloud(isInitial = false) {
-            if(!DATABASE_URL) return;
-            const ind = document.getElementById('syncIndicator'), txt = document.getElementById('syncText');
-            const hIcon = document.getElementById('headerSyncIcon'), sIcon = document.getElementById('sidebarSyncIcon');
-            const hBtn = document.getElementById('headerSyncBtn');
-            
-            if(ind) {
-                ind.classList.remove('bg-emerald-500', 'bg-red-500');
-                ind.classList.add('bg-amber-500', 'sync-pulse');
-            }
-            if(txt) txt.innerText = "Syncing...";
-            if(hIcon) hIcon.classList.add('animate-spin');
-            if(sIcon) sIcon.classList.add('animate-spin');
-            if(hBtn) hBtn.classList.replace('bg-emerald-50', 'bg-amber-50');
-
-            try {
-                const response = await fetch(DATABASE_URL);
-                const cloudData = await response.json();
-                if (Array.isArray(cloudData)) {
-                    crewData = cloudData.map(c => ({
-                        ...c,
-                        licensePages: c.licensePages || new Array(10).fill(null),
-                        medicalPages: c.medicalPages || new Array(2).fill(null),
-                        passportPages: c.passportPages || new Array(2).fill(null),
-                        ktpPages: c.ktpPages || new Array(2).fill(null),
-                        kkPages: c.kkPages || new Array(1).fill(null),
-                        ccpPages: c.ccpPages || new Array(2).fill(null),
-                        loaPages: c.loaPages || new Array(2).fill(null)
-                    }));
-                    if (currentUserRole === 'admin') renderCrewList(crewData);
-                    else if (selectedCrewId) selectCrew(selectedCrewId);
-                    updateStats();
-                }
-                if(ind) {
-                    ind.classList.remove('bg-amber-500', 'sync-pulse');
-                    ind.classList.add('bg-emerald-500');
-                }
-                if(txt) txt.innerText = "Cloud Connected";
-                if(!isInitial) showToast("Data Diperbarui!");
-            } catch (err) { 
-                if(ind) {
-                    ind.classList.remove('bg-amber-500', 'sync-pulse');
-                    ind.classList.add('bg-red-500');
-                }
-                if(txt) txt.innerText = "Sync Error";
-                showToast("Gagal Sinkron!");
-            } finally {
-                if(hIcon) hIcon.classList.remove('animate-spin');
-                if(sIcon) sIcon.classList.remove('animate-spin');
-                if(hBtn) hBtn.classList.replace('bg-amber-50', 'bg-emerald-50');
-            }
-        }
-
-        async function syncToGoogleSheet(crew) {
-            if(!DATABASE_URL) return;
-            const ind = document.getElementById('syncIndicator'), txt = document.getElementById('syncText');
-            const hIcon = document.getElementById('headerSyncIcon'), sIcon = document.getElementById('sidebarSyncIcon');
-            const hBtn = document.getElementById('headerSyncBtn');
-            
-            if(ind) {
-                ind.classList.remove('bg-emerald-500', 'bg-red-500');
-                ind.classList.add('bg-amber-500', 'sync-pulse');
-            }
-            if(txt) txt.innerText = "Sync Cloud...";
-            if(hIcon) hIcon.classList.add('animate-spin');
-            if(sIcon) sIcon.classList.add('animate-spin');
-            if(hBtn) hBtn.classList.replace('bg-emerald-50', 'bg-amber-50');
-
-            try {
-                const crewCopy = JSON.parse(JSON.stringify(crew));
-                await fetch(DATABASE_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify(crewCopy) 
-                });
-                
-                showToast("Sinkron Berhasil!");
-                if(ind) {
-                    ind.classList.remove('bg-amber-500', 'sync-pulse');
-                    ind.classList.add('bg-emerald-500');
-                }
-                if(txt) txt.innerText = "Cloud Connected";
-            } catch (err) { 
-                if(ind) {
-                    ind.classList.remove('bg-amber-500', 'sync-pulse');
-                    ind.classList.add('bg-red-500');
-                }
-                showToast("Gagal Sinkron!"); 
-            } finally {
-                setTimeout(() => {
-                    if(hIcon) hIcon.classList.remove('animate-spin');
-                    if(sIcon) sIcon.classList.remove('animate-spin');
-                    if(hBtn) hBtn.classList.replace('bg-amber-50', 'bg-emerald-50');
-                }, 500);
-            }
-        }
-
-        async function syncDeleteToCloud(id) {
-            if(!DATABASE_URL) return;
-            const ind = document.getElementById('syncIndicator'), txt = document.getElementById('syncText');
-            const hIcon = document.getElementById('headerSyncIcon');
-            
-            if(ind) ind.classList.add('bg-amber-500', 'sync-pulse');
-            if(hIcon) hIcon.classList.add('animate-spin');
-            
-            try {
-                await fetch(DATABASE_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ action: 'delete', id }) 
-                });
-                showToast("Data Terhapus di Cloud");
-            } catch (err) {
-                showToast("Gagal hapus di cloud");
-            } finally {
-                if(ind) ind.classList.remove('bg-amber-500', 'sync-pulse');
-                if(hIcon) hIcon.classList.remove('animate-spin');
-                pullDataFromCloud(true);
-            }
-        }
-
-        function selectCrew(id) {
-            selectedCrewId = id; const crew = crewData.find(c => c.id === id); if(!crew) return;
-            document.getElementById('welcomeScreen').classList.add('hidden'); 
-            document.getElementById('crewDetailView').classList.remove('hidden');
-            document.getElementById('detName').innerText = crew.name; 
-            document.getElementById('detRank').innerText = crew.rank;
-            document.getElementById('detLicenseNo').innerText = crew.licenseNo; 
-            document.getElementById('detQualification').innerText = crew.qualification || "GENERAL PILOT";
-            const box = document.getElementById('detAvatarContainer'); 
-            const imgSrc = getDirectImgUrl(crew.profilePhoto);
-            box.innerHTML = imgSrc ? `<img src="${imgSrc}" class="w-full h-full object-cover">` : `<svg class="w-24 h-24 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
-            renderDocumentCards(crew);
-        }
-
-        function renderDocumentCards(crew) {
-            const container = document.getElementById('documentContainer'); 
-            if(!container) return;
-            container.innerHTML = '';
-            const q = crew.qualification?.split(',').map(s => s.trim()) || [];
-            let activeDocs = [...defaultDocTypes.map(d => ({...d, isCustom: false}))];
-            if(q.includes('CCP')) activeDocs.push({ id: 'ccp', name: "CCP Certificate", pages: 2, layout: 'portrait' });
-            if(q.includes('FI') || q.includes('GI')) activeDocs.push({ id: 'loa', name: "LOA", pages: 2, layout: 'portrait' });
-            
-            const customActive = customDocTypes.filter(dt => crew[`${dt.id}Pages`] !== null);
-            activeDocs = [...activeDocs, ...customActive];
-
-            activeDocs.forEach(doc => {
-                const pages = crew[`${doc.id}Pages`] || [];
-                const hasFile = Array.isArray(pages) && pages.some(p => p !== null);
-                const card = document.createElement('div');
-                card.className = "glass-card p-4 rounded-3xl cursor-pointer hover:border-amber-500 transition-all border flex flex-col items-center text-center relative group";
-                
-                let deleteMenuBtn = (doc.id.startsWith('custom_') && currentUserRole === 'admin') ? 
-                    `<button onclick="event.stopPropagation(); openDocDeleteModal('${doc.id}')" class="absolute top-2 right-2 p-2 text-slate-300 hover:text-orange-500 z-20"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : "";
-
-                card.onclick = () => openMultiPageModal(doc.id, doc.name);
-                card.innerHTML = `${deleteMenuBtn}<h4 class="text-[10px] font-black text-slate-800 uppercase tracking-widest">${doc.name}</h4><div class="mt-3 px-3 py-1 rounded-lg ${hasFile ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'} text-[8px] font-black uppercase">${hasFile ? 'Tersedia' : 'Kosong'}</div>`;
-                container.appendChild(card);
-            });
-        }
-
-        function openMultiPageModal(type, title) { 
-            activeGridType = type; 
-            const crew = crewData.find(c => c.id === selectedCrewId); if(!crew) return;
-            document.getElementById('gridModalTitle').innerText = title; 
-            document.getElementById('gridModalCrewName').innerText = crew.name; 
-            renderGridPages(crew, type); 
-            document.getElementById('gridModal').classList.remove('hidden'); 
-        }
-
-        function renderGridPages(crew, type) {
-            const container = document.getElementById('gridPageContainer'); if(!container) return;
-            container.innerHTML = '';
-            
-            // Get Layout Type from doc definitions
-            const docDef = [...defaultDocTypes, ...customDocTypes, {id:'ccp', pages:2, layout:'portrait'}, {id:'loa', pages:2, layout:'portrait'}].find(d => d.id === type);
-            const expectedCount = docDef?.pages || 2;
-            const layoutType = docDef?.layout || 'portrait';
-
-            // Determine appropriate CSS class for slot based on layout
-            let slotClass = "license-slot"; // Default portrait
-            if (layoutType === 'landscape') slotClass = "landscape-slot";
-            else if (layoutType === 'idcard') slotClass = "idcard-slot";
-            else if (layoutType === 'passport') slotClass = "passport-slot";
-
-            // Adjust container grid columns for better landscape viewing on mobile
-            container.className = (layoutType === 'landscape' || layoutType === 'idcard' || layoutType === 'passport') 
-                ? "grid grid-cols-1 sm:grid-cols-2 gap-4" 
-                : "grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8";
-
-            if (!crew[`${type}Pages`]) crew[`${type}Pages`] = new Array(expectedCount).fill(null);
-            const pages = crew[`${type}Pages`];
-            
-            for(let i=0; i < expectedCount; i++) {
-                const s = document.createElement('div');
-                s.className = `${slotClass} flex flex-col items-center justify-center overflow-hidden`;
-                s.onclick = () => { const inp = document.createElement('input'); inp.type='file'; inp.onchange=(e)=>handleGridFileUpload(e, i, type); inp.click(); };
-                const pData = pages[i];
-                let delBtn = pData ? `<button onclick="event.stopPropagation(); openFileDeleteModal(${i}, '${type}')" class="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-lg shadow-lg z-20"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : "";
-                s.innerHTML = `<div class="absolute top-2 left-0 w-full bg-slate-900/60 py-1 z-10"><p class="text-[7px] text-white text-center font-bold uppercase">Page ${i+1}</p></div>${delBtn}${pData ? `<img src="${getDirectImgUrl(pData.data)}" class="absolute inset-0 w-full h-full object-cover">` : '<svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>'}`;
-                container.appendChild(s);
-            }
-        }
-
-        function handleGridFileUpload(e, index, type) {
-            const f = e.target.files[0]; if(!f) return;
-            const r = new FileReader(); r.onload = (ev) => {
-                const idx = crewData.findIndex(c => c.id === selectedCrewId);
-                if (idx === -1) return;
-                crewData[idx][`${type}Pages`][index] = { data: ev.target.result, type: f.type };
-                renderGridPages(crewData[idx], type); 
-                renderDocumentCards(crewData[idx]); 
-                updateStats(); 
-            };
-            r.readAsDataURL(f);
-        }
-
-        function syncAndCloseGrid() {
-            const crew = crewData.find(c => c.id === selectedCrewId);
-            if(crew) { updateStats(); syncToGoogleSheet(crew); }
-            closeGridModal();
-        }
-
-        function openAddCrewModal() { 
-            editingCrewId = null; currentFormPhotoBase64 = null; 
-            document.getElementById('crewFormTitle').innerText = "Registrasi Kru";
-            document.getElementById('crewFormModal').classList.remove('hidden'); 
-        }
-
-        function handleCrewSubmit(e) {
-            e.preventDefault();
-            const n = document.getElementById('crewName').value, em = document.getElementById('crewEmail').value;
-            const u = document.getElementById('crewUsername').value, p = document.getElementById('crewPassword').value;
-            const l = document.getElementById('crewLicenseNo').value, r = document.getElementById('crewRank').value;
-            const quals = Array.from(document.querySelectorAll('.qual-checkbox:checked')).map(cb => cb.value).join(', ');
-            let crew;
-            if (editingCrewId) {
-                const i = crewData.findIndex(c => c.id === editingCrewId);
-                crewData[i] = { ...crewData[i], name: n, email: em, username: u, password: p, licenseNo: l, rank: r, qualification: quals, profilePhoto: currentFormPhotoBase64 };
-                crew = crewData[i];
+                `;
             } else {
-                crew = { id: Date.now(), name: n, email: em, username: u, password: p, licenseNo: l, rank: r, qualification: quals, profilePhoto: currentFormPhotoBase64, licensePages: new Array(10).fill(null), medicalPages: new Array(2).fill(null), passportPages: new Array(2).fill(null), ktpPages: new Array(2).fill(null), kkPages: new Array(1).fill(null), ccpPages: new Array(2).fill(null), loaPages: new Array(2).fill(null) };
-                crewData.push(crew);
+                container.innerHTML = `
+                <div class="p-6 space-y-4">
+                    ${state.menus.map((menu, idx) => `
+                        <div class="bg-white rounded-[2rem] border border-slate-100 p-5 flex items-center gap-4 hover:border-indigo-100 transition-all animate-slide-up">
+                            <div onclick="router.navigate('view', ${idx})" class="flex flex-1 items-center gap-4 cursor-pointer">
+                                <div class="w-16 h-16 rounded-[1.25rem] bg-indigo-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden shadow-xl shadow-indigo-50">
+                                    ${menu.apps[0]?.icon ? `<img src="${fixDriveUrl(menu.apps[0].icon)}" class="w-full h-full object-cover" onerror="handleImgError(this)">` : ''}
+                                    <span class="img-fallback ${menu.apps[0]?.icon ? 'hidden' : ''}">${menu.owner.charAt(0).toUpperCase()}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900">${menu.owner}</h4>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${menu.apps.length} Item</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-0.5">
+                                <button onclick="router.duplicateMenu(${idx})" class="p-2.5 text-slate-300 hover:text-indigo-600"><i data-lucide="copy" class="w-4 h-4"></i></button>
+                                <button onclick="router.navigate('create', ${idx})" class="p-2.5 text-slate-300 hover:text-indigo-600"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="router.deleteMenu(${idx})" class="p-2.5 text-slate-300 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
             }
-            updateStats(); closeCrewModal(); renderCrewList(crewData); syncToGoogleSheet(crew);
-        }
+            lucide.createIcons();
+        };
 
-        function getDirectImgUrl(u) { if (!u) return null; if (u.startsWith('data:image')) return u; const m = u.match(/[-\w]{25,}/); return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : u; }
-        function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
-        function closeGridModal() { document.getElementById('gridModal').classList.add('hidden'); }
-        function openAddDocModal() { document.getElementById('docFormModal').classList.remove('hidden'); }
-        function closeDocModal() { document.getElementById('docFormModal').classList.add('hidden'); }
-        function closeCrewModal() { document.getElementById('crewFormModal').classList.add('hidden'); }
-        function openDeleteModal(id) { crewToDeleteId = id; document.getElementById('deleteConfirmModal').classList.remove('hidden'); }
-        function closeDeleteModal() { document.getElementById('deleteConfirmModal').classList.add('hidden'); }
-        
-        function openDocDeleteModal(id) { docToDeleteId = id; document.getElementById('docDeleteConfirmModal').classList.remove('hidden'); }
-        function closeDocDeleteModal() { document.getElementById('docDeleteConfirmModal').classList.add('hidden'); docToDeleteId = null; }
-        
-        function openFileDeleteModal(i, t) { fileToDeleteIndex = i; fileToDeleteType = t; document.getElementById('fileDeleteConfirmModal').classList.remove('hidden'); }
-        function closeFileDeleteModal() { document.getElementById('fileDeleteConfirmModal').classList.add('hidden'); }
-        function toggleMobileMenu() { document.getElementById('mainSidebar').classList.toggle('-translate-x-full'); document.getElementById('mobileOverlay').classList.toggle('hidden'); }
-        function autoPopulateUsername(v) { document.getElementById('crewUsername').value = v; }
-        function populatePageSelect() { const s = document.getElementById('newDocPages'); for(let i=1; i<=15; i++) { const o = document.createElement('option'); o.value = i; o.innerText = i + " Halaman"; s.appendChild(o); } }
-        function triggerProfilePhotoUpload() { document.getElementById('crewProfilePhotoInput').click(); }
-        function handleCrewProfileUpload(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { currentFormPhotoBase64 = ev.target.result; const p = document.getElementById('formPhotoPreview'); p.src = ev.target.result; p.classList.remove('hidden'); document.getElementById('formPhotoIcon').classList.add('hidden'); }; r.readAsDataURL(f); }
-        function filterCrew() { const q = document.getElementById('crewSearch').value.toLowerCase(); const f = crewData.filter(c => c.name.toLowerCase().includes(q) || c.licenseNo.toLowerCase().includes(q)); renderCrewList(f); }
+        const renderCreate = (editIndex = null) => {
+            if (state.isInitialLoad) {
+                if (editIndex !== null) {
+                    state.editingIndex = editIndex;
+                    state.tempApps = [...state.menus[editIndex].apps];
+                    state.tempOwnerName = state.menus[editIndex].owner;
+                } else {
+                    state.editingIndex = null;
+                    state.tempApps = [];
+                    state.tempOwnerName = "";
+                }
+                state.editingTempAppIndex = null;
+                state.isInitialLoad = false;
+            }
 
-        window.onload = init;
+            const isEdit = state.editingIndex !== null;
+            const isEditingApp = state.editingTempAppIndex !== null;
+            const container = document.getElementById('main-content');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('view-title').innerText = isEdit ? "Edit Space" : "New Space";
+            
+            const currentURL = window.location.origin + window.location.pathname;
+            const shareURL = `${currentURL}?view=${encodeURIComponent(state.tempOwnerName || '')}`;
+            const editAppData = isEditingApp ? state.tempApps[state.editingTempAppIndex] : { name: '', url: '', icon: '', isFolder: false, parentId: null };
+
+            const folderOptions = state.tempApps.filter(a => a.isFolder && (isEditingApp ? a.id !== state.tempApps[state.editingTempAppIndex].id : true));
+
+            container.innerHTML = `
+                <div class="p-6 space-y-8 animate-slide-up pb-24">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">IDENTITAS PEMILIK</label>
+                        <input type="text" id="owner-name" value="${state.tempOwnerName}" 
+                            oninput="state.tempOwnerName = this.value; document.getElementById('share-url-input').value = '${currentURL}?view=' + encodeURIComponent(this.value)" 
+                            placeholder="Contoh: Ramdan Studio" 
+                            class="w-full p-5 rounded-[1.5rem] bg-slate-50 border-none outline-none font-bold text-slate-700 focus:ring-2 focus:ring-indigo-100 transition-all">
+                    </div>
+
+                    <div class="p-5 bg-slate-900 rounded-[2rem] space-y-4">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Shareable Direct Link</label>
+                        <div class="flex gap-3 items-center">
+                            <input type="text" id="share-url-input" value="${shareURL}" readonly 
+                                class="flex-1 bg-white/5 text-white/50 text-[11px] outline-none font-mono truncate">
+                            <button id="copy-btn" onclick="copyText('share-url-input')" class="text-indigo-400 p-2 bg-white/5 rounded-xl"><i data-lucide="copy" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="${isEditingApp ? 'bg-amber-50 ring-1 ring-amber-100' : 'bg-indigo-50/40'} p-6 rounded-[2.5rem] space-y-5 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-[10px] font-black ${isEditingApp ? 'text-amber-600' : 'text-indigo-600'} uppercase tracking-widest">
+                                ${isEditingApp ? 'EDIT ELEMEN' : 'TAMBAH ELEMEN BARU'}
+                            </h3>
+                            ${isEditingApp ? `<button onclick="router.cancelEditApp()" class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded">Batal</button>` : ''}
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <input type="text" id="new-app-name" value="${editAppData.name}" placeholder="Label / Nama Aplikasi" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
+                            
+                            <div class="flex items-center gap-3 px-1 py-1">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div class="relative">
+                                        <input type="checkbox" id="is-folder" class="sr-only peer" ${editAppData.isFolder ? 'checked' : ''} onchange="document.getElementById('url-field').style.display = this.checked ? 'none' : 'block'">
+                                        <div class="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-indigo-600 transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-600">Jadikan Folder (Parent)</span>
+                                </label>
+                            </div>
+
+                            <div id="url-field" style="display: ${editAppData.isFolder ? 'none' : 'block'}">
+                                <input type="url" id="new-app-url" value="${editAppData.url}" placeholder="URL Aplikasi (https://...)" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
+                            </div>
+
+                            <input type="url" id="new-app-icon" value="${editAppData.icon}" placeholder="URL Ikon (Drive/Web)" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm">
+
+                            <div class="space-y-1.5">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">LOKASI PENEMPATAN</label>
+                                <select id="parent-id" class="w-full p-4 rounded-xl bg-white outline-none text-sm font-semibold shadow-sm appearance-none cursor-pointer">
+                                    <option value="null">Menu Utama Dashboard</option>
+                                    ${folderOptions.map(f => `<option value="${f.id}" ${editAppData.parentId === f.id ? 'selected' : ''}>Di dalam Folder: ${f.name}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onclick="router.addToTempList()" class="w-full ${isEditingApp ? 'bg-amber-500 shadow-amber-100' : 'bg-indigo-600 shadow-indigo-100'} text-white p-4 rounded-2xl text-xs font-extrabold uppercase tracking-widest shadow-xl transition-all active:scale-95">
+                            ${isEditingApp ? 'Update Elemen' : 'Tambahkan Elemen'}
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">STRUKTUR MENU (${state.tempApps.length})</label>
+                        <div class="space-y-2.5">
+                            ${state.tempApps.map((app, i) => `
+                                <div class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 ${state.editingTempAppIndex === i ? 'ring-2 ring-amber-400' : ''}">
+                                    <div class="w-12 h-12 rounded-[1rem] ${app.isFolder ? 'bg-indigo-50' : 'bg-slate-50'} flex items-center justify-center overflow-hidden shrink-0">
+                                        ${app.icon ? `<img src="${fixDriveUrl(app.icon)}" class="w-full h-full object-cover" onerror="handleImgError(this)">` : ''}
+                                        <div class="img-fallback flex items-center justify-center w-full h-full text-indigo-400">
+                                            <i data-lucide="${app.isFolder ? 'folder' : 'globe'}" class="w-5 h-5"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-sm font-bold text-slate-800 truncate">${app.name}</p>
+                                            ${app.isFolder ? '<span class="text-[8px] bg-indigo-100 text-indigo-600 px-1.5 rounded-full font-black uppercase">Folder</span>' : ''}
+                                        </div>
+                                        <p class="text-[9px] text-slate-400 truncate mt-0.5">
+                                            ${app.parentId !== "null" && app.parentId ? `Induk: ${state.tempApps.find(a => a.id === app.parentId)?.name || '?'}` : 'Menu Utama'}
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <button onclick="router.editTempApp(${i})" class="p-2 text-slate-300 hover:text-indigo-600 transition-all"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                        <button onclick="router.removeFromTemp(${i})" class="text-slate-300 p-2 hover:text-rose-500 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <button onclick="router.saveFinalMenu()" class="w-full bg-slate-900 text-white p-5 rounded-[2.5rem] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-all">
+                        ${isEdit ? 'Update Dashboard' : 'Simpan Dashboard'}
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+        };
+
+        const renderView = (index, folderId = null) => {
+            state.currentMenuIndex = index;
+            state.currentFolderId = folderId;
+            const menu = state.menus[index];
+            const container = document.getElementById('main-content');
+            const header = document.getElementById('main-header');
+            const bottomNav = document.getElementById('bottom-nav');
+            const appWrapper = document.getElementById('app');
+            
+            bottomNav.style.transform = 'translateY(100%)';
+            
+            const visibleApps = menu.apps.filter(app => String(app.parentId) === String(folderId));
+            const folderName = folderId ? menu.apps.find(a => a.id === folderId)?.name : null;
+
+            if (state.isDirectMode && !folderId) {
+                header.classList.add('hidden');
+                appWrapper.classList.add('direct-bg');
+            } else {
+                header.classList.remove('hidden');
+                appWrapper.classList.remove('direct-bg');
+                document.getElementById('back-btn-header').classList.remove('hidden');
+                document.getElementById('home-btn').classList.toggle('hidden', state.isDirectMode);
+                
+                document.getElementById('back-btn-header').onclick = () => {
+                    if (folderId) {
+                        const currentFolder = menu.apps.find(a => a.id === folderId);
+                        renderView(index, currentFolder.parentId !== "null" ? currentFolder.parentId : null);
+                    } else {
+                        router.navigate('list');
+                    }
+                };
+
+                document.getElementById('view-title').innerText = folderName || menu.owner;
+                document.getElementById('view-subtitle').innerText = folderId ? "Folder Aktif" : "Preview Dashboard";
+            }
+
+            container.innerHTML = `
+                <div class="flex-1 p-10 flex flex-col items-center animate-slide-up">
+                    ${state.isDirectMode && !folderId ? `
+                        <div class="w-full mb-16 text-left">
+                            <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 leading-none">${menu.owner}</h1>
+                            <div class="flex items-center gap-2 mt-4">
+                                <span class="h-1 w-8 bg-indigo-600 rounded-full"></span>
+                                <p class="text-[10px] text-indigo-500 uppercase tracking-[0.3em] font-black">Personal Dashboard</p>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${folderId ? `
+                         <div class="w-full mb-10 animate-slide-up">
+                            <button onclick="renderView(${index}, ${menu.apps.find(a => a.id === folderId).parentId !== "null" ? `'${menu.apps.find(a => a.id === folderId).parentId}'` : 'null'})" class="flex items-center gap-2 text-indigo-600 font-bold text-xs">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i> Kembali ke ${menu.apps.find(a => a.id === folderId).parentId !== "null" ? 'Folder Sebelumnya' : 'Halaman Utama'}
+                            </button>
+                         </div>
+                    ` : ''}
+
+                    <div class="grid grid-cols-2 gap-x-12 gap-y-12 w-full pb-10">
+                        ${visibleApps.map((app, i) => `
+                            <div onclick="${app.isFolder ? `renderView(${index}, '${app.id}')` : `router.openBrowser('${app.url}', '${app.name}')`}" class="flex flex-col items-center gap-5 cursor-pointer group">
+                                <div class="w-full aspect-square bg-white squircle flex items-center justify-center overflow-hidden relative">
+                                    ${app.icon ? 
+                                        `<img src="${fixDriveUrl(app.icon)}" referrerpolicy="no-referrer" class="w-full h-full object-cover absolute inset-0" onerror="handleImgError(this)">` : ''
+                                    }
+                                    <div class="img-fallback flex flex-col items-center justify-center w-full h-full ${app.icon ? 'hidden' : ''}">
+                                        <i data-lucide="${app.isFolder ? 'folder-open' : 'external-link'}" class="w-10 h-10 ${app.isFolder ? 'text-indigo-400' : 'text-indigo-100'}"></i>
+                                    </div>
+                                    ${app.isFolder ? `
+                                        <div class="absolute bottom-2 right-2 bg-indigo-600 text-white rounded-lg p-1 shadow-lg">
+                                            <i data-lucide="layers" class="w-3 h-3"></i>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <span class="font-bold text-sm text-slate-600 tracking-tight text-center group-active:text-indigo-600 transition-colors">${app.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        };
+
+        const renderBrowser = (url, name) => {
+            const container = document.getElementById('main-content');
+            const header = document.getElementById('main-header');
+            const backBtnHeader = document.getElementById('back-btn-header');
+            const appWrapper = document.getElementById('app');
+            
+            header.classList.remove('hidden');
+            appWrapper.classList.remove('direct-bg');
+            backBtnHeader.classList.remove('hidden');
+            document.getElementById('header-nav').classList.remove('hidden');
+            
+            if (state.isDirectMode) document.getElementById('home-btn').classList.add('hidden');
+
+            backBtnHeader.onclick = () => renderView(state.currentMenuIndex, state.currentFolderId);
+            document.getElementById('view-title').innerText = name;
+            document.getElementById('view-subtitle').innerText = "Aplikasi Berjalan";
+
+            container.className = "flex-1 overflow-hidden p-0 relative bg-white";
+            container.innerHTML = `
+                <div class="absolute top-4 right-4 z-40">
+                    <a href="${url}" target="_blank" class="bg-indigo-600 text-white p-3.5 rounded-2xl shadow-xl shadow-indigo-200 flex items-center gap-2 text-[10px] font-bold active:scale-95 transition-all">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> OPEN TAB
+                    </a>
+                </div>
+                <iframe src="${url}" class="w-full h-full bg-white"></iframe>
+            `;
+            lucide.createIcons();
+        };
+
+        const router = {
+            navigate: (view, param) => {
+                const content = document.getElementById('main-content');
+                const appWrapper = document.getElementById('app');
+                content.className = "flex-1 overflow-y-auto custom-scrollbar flex flex-col";
+                appWrapper.classList.remove('direct-bg');
+                state.currentView = view;
+                if (view !== 'create') state.isInitialLoad = true;
+
+                if (view === 'list') renderList();
+                if (view === 'create') renderCreate(param !== undefined ? param : null);
+                if (view === 'view') renderView(param);
+                if (view === 'browser') renderBrowser(param.url, param.name);
+                if (view === 'settings') {
+                    document.getElementById('main-header').classList.remove('hidden');
+                    document.getElementById('bottom-nav').style.transform = 'translateY(0)';
+                    content.innerHTML = `
+                        <div class="p-8 space-y-6 flex-1 flex flex-col items-center justify-center animate-slide-up text-center">
+                            <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center mb-4"><i data-lucide="trash-2" class="w-10 h-10"></i></div>
+                            <h2 class="text-xl font-bold">Pusat Data</h2>
+                            <p class="text-sm text-slate-400 max-w-xs">Data disimpan secara lokal di perangkat Anda.</p>
+                            <button onclick="router.clearAll()" class="mt-4 px-8 py-4 bg-rose-500 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-rose-100 transition-all active:scale-95">Reset Data</button>
+                        </div>`;
+                    lucide.createIcons();
+                }
+                window.scrollTo(0,0);
+            },
+            duplicateMenu: (idx) => {
+                const original = state.menus[idx];
+                const duplicate = JSON.parse(JSON.stringify(original));
+                duplicate.owner += " (Salinan)";
+                state.menus.push(duplicate);
+                saveState();
+                renderList();
+            },
+            addToTempList: () => {
+                const name = document.getElementById('new-app-name').value;
+                const isFolder = document.getElementById('is-folder').checked;
+                const url = isFolder ? "" : document.getElementById('new-app-url').value;
+                const icon = document.getElementById('new-app-icon').value;
+                const parentId = document.getElementById('parent-id').value;
+
+                if (!name || (!isFolder && !url)) return alert("Lengkapi data!");
+                
+                const isEditingApp = state.editingTempAppIndex !== null;
+                
+                const appObj = { 
+                    id: isEditingApp ? state.tempApps[state.editingTempAppIndex].id : Date.now().toString(),
+                    name, 
+                    url, 
+                    icon, 
+                    isFolder, 
+                    parentId: parentId === "null" ? "null" : parentId 
+                };
+
+                if (state.editingTempAppIndex !== null) {
+                    state.tempApps[state.editingTempAppIndex] = appObj;
+                    state.editingTempAppIndex = null;
+                } else {
+                    state.tempApps.push(appObj);
+                }
+                state.tempOwnerName = document.getElementById('owner-name').value;
+                renderCreate(state.editingIndex);
+            },
+            editTempApp: (i) => {
+                state.tempOwnerName = document.getElementById('owner-name').value;
+                state.editingTempAppIndex = i;
+                renderCreate(state.editingIndex);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            cancelEditApp: () => {
+                state.editingTempAppIndex = null;
+                renderCreate(state.editingIndex);
+            },
+            removeFromTemp: (i) => {
+                state.tempApps.splice(i, 1);
+                renderCreate(state.editingIndex);
+            },
+            saveFinalMenu: () => {
+                const owner = document.getElementById('owner-name').value;
+                if (!owner || state.tempApps.length === 0) return alert("Lengkapi data!");
+                if (state.editingIndex !== null) {
+                    state.menus[state.editingIndex] = { owner, apps: [...state.tempApps] };
+                } else {
+                    state.menus.push({ owner, apps: [...state.tempApps] });
+                }
+                saveState();
+                state.tempApps = []; state.tempOwnerName = ""; state.isInitialLoad = true;
+                router.navigate('list');
+            },
+            openBrowser: (url, name) => router.navigate('browser', {url, name}),
+            deleteMenu: (idx) => { if (confirm("Hapus proyek ini?")) { state.menus.splice(idx, 1); saveState(); renderList(); } },
+            clearAll: () => { if(confirm("Hapus semua data?")) { localStorage.clear(); location.reload(); } }
+        };
+
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewName = urlParams.get('view');
+            if (viewName) {
+                const index = state.menus.findIndex(m => m.owner.toLowerCase() === viewName.toLowerCase());
+                if (index !== -1) {
+                    state.isDirectMode = true;
+                    router.navigate('view', index);
+                } else renderList();
+            } else renderList();
+            
+            document.getElementById('home-btn').onclick = () => {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                state.isDirectMode = false;
+                router.navigate('list');
+            };
+        };
     </script>
 </body>
 </html>
